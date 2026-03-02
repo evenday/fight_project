@@ -84,3 +84,33 @@ RaycastHit.distance를 CameraSmoothMove()의 이동 목표자리로함
 충돌 적용시 -> collider_zoom_size 
 마우스 휠-> zoom_size
 
+1-2-2-2-5-1
+회전을 빨리하면 벽을 통과함 
+spherecast로 벽이나 바닥에 충돌전에 적용
+(확인 거리는 CameraManager 부터 카메라 뒤(3.0) 만큼 뒤를 확인)
+checksphere로 벽이나 바닥에 통과시 적용
+(카메라 주심으로 부터 0.5f 거리(반지름)으로 체크)
+->만약 checksphere 충돌 되었을 시 
+
+CameraZoom()
+변경 
+충돌 시 zoom 기능 추가
+마우스 휠로 in/out과 충돌 처리시 zoom target을 따로 관리
+
+Checksphere(벽외부로 나가는거 방지)
+->충돌 될시 distance -= 1 (smoothdamp X -> smoothdamp로 이동시 천천히 이동되어서 외부가 보임)
+
+spherecast
+start: CameraManager위치
+direction: CameraManager -> MainCamera
+MaxDistance: MainCamera + 3.0f 까지 
+만약 충돌시 
+충돌위치에서 3.0f를 뺀거리를 줌 target으로 
+else
+input->mouse_wheel값으로 zoom거리 조정 
+
+MouseZoom(), ColZoom() 추가 
+각각 입력조작과 충돌시 줌 기능을 가짐 
+CameraZoom()에서 사용
+
+
