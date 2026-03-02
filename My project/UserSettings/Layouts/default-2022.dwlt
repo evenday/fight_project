@@ -19,7 +19,7 @@ MonoBehaviour:
     width: 1920
     height: 1037
   m_ShowMode: 4
-  m_Title: Console
+  m_Title: Project
   m_RootView: {fileID: 8}
   m_MinSize: {x: 875, y: 332}
   m_MaxSize: {x: 10000, y: 10000}
@@ -101,7 +101,7 @@ MonoBehaviour:
   m_MinSize: {x: 300, y: 50}
   m_MaxSize: {x: 24288, y: 8096}
   vertical: 0
-  controlID: 53
+  controlID: 43
   draggingID: 0
 --- !u!114 &5
 MonoBehaviour:
@@ -180,7 +180,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 50}
   m_MaxSize: {x: 16192, y: 8096}
   vertical: 0
-  controlID: 125
+  controlID: 77
   draggingID: 0
 --- !u!114 &8
 MonoBehaviour:
@@ -277,7 +277,7 @@ MonoBehaviour:
   m_MinSize: {x: 400, y: 100}
   m_MaxSize: {x: 32384, y: 16192}
   vertical: 0
-  controlID: 161
+  controlID: 41
   draggingID: 0
 --- !u!114 &12
 MonoBehaviour:
@@ -303,7 +303,7 @@ MonoBehaviour:
   m_MinSize: {x: 300, y: 100}
   m_MaxSize: {x: 24288, y: 16192}
   vertical: 1
-  controlID: 52
+  controlID: 42
   draggingID: 0
 --- !u!114 &13
 MonoBehaviour:
@@ -350,8 +350,8 @@ MonoBehaviour:
     y: 0
     width: 904
     height: 410
-  m_MinSize: {x: 102, y: 121}
-  m_MaxSize: {x: 4002, y: 4021}
+  m_MinSize: {x: 100, y: 100}
+  m_MaxSize: {x: 4000, y: 4000}
   m_ActualView: {fileID: 21}
   m_Panes:
   - {fileID: 21}
@@ -599,7 +599,7 @@ MonoBehaviour:
   m_SceneHierarchy:
     m_TreeViewState:
       scrollPos: {x: 0, y: 0}
-      m_SelectedIDs: 
+      m_SelectedIDs: 8a570000
       m_LastClickedID: 0
       m_ExpandedIDs: 2afbffff
       m_RenameOverlay:
@@ -670,7 +670,7 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/Package/Undead Survivor
+    - Assets/Script
     m_Globs: []
     m_OriginalText: 
     m_ImportLogFlags: 0
@@ -678,16 +678,16 @@ MonoBehaviour:
   m_ViewMode: 1
   m_StartGridSize: 60
   m_LastFolders:
-  - Assets/Package/Undead Survivor/Animations
+  - Assets/Script
   m_LastFoldersGridSize: 60
-  m_LastProjectPath: C:\Users\User\Unity_Project\My project
+  m_LastProjectPath: C:\Users\User\Desktop\fight_project\My project
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
     scrollPos: {x: 0, y: 0}
-    m_SelectedIDs: e25d0000
-    m_LastClickedID: 24034
-    m_ExpandedIDs: 00000000cc5d0000ce5d0000de5d0000e25d0000
+    m_SelectedIDs: 165d0000
+    m_LastClickedID: 23830
+    m_ExpandedIDs: 00000000e45c0000e85c0000ea5c0000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -715,7 +715,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 7cf3ffff
     m_LastClickedID: 0
-    m_ExpandedIDs: 00000000cc5d0000ce5d0000
+    m_ExpandedIDs: 00000000e45c0000e65c0000e85c0000ea5c0000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -742,7 +742,7 @@ MonoBehaviour:
   m_ListAreaState:
     m_SelectedInstanceIDs: 
     m_LastClickedInstanceID: 0
-    m_HadKeyboardFocusLastEvent: 0
+    m_HadKeyboardFocusLastEvent: 1
     m_ExpandedInstanceIDs: c6230000d0d3000068e9000086b200008cb2000074b200004eb3000008f50000d4b4000042b5000024b2000030b900005eb9000036bd0000806300009a5c0000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
@@ -1362,7 +1362,7 @@ MonoBehaviour:
   m_Rotation:
     m_Target: {x: 0.05556841, y: -0.6550277, z: 0.048466425, w: 0.7518408}
     speed: 2
-    m_Value: {x: -0.05556841, y: 0.6550277, z: -0.048466425, w: -0.7518408}
+    m_Value: {x: 0.055575002, y: -0.6551054, z: 0.048472177, w: 0.75193}
   m_Size:
     m_Target: 5.8638735
     speed: 2
