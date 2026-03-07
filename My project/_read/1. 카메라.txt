@@ -39,7 +39,9 @@ CameraManger(XAxis(YAxis(MainCamera)))
 
 1-2-2-2 마우스휠로 zoom(in out)
 확대나 축소 할때 뚝뚝 끈기는 느낌이 있어 부드럽게 하기
-smoothdamp()사용(lerp-> 비율값을 계속 계산 해줘야해서 X(deltaTime / durtion))
+smoothdamp()사용
+(lerp->update매플레임마다 A에서 B까지의 거리에 t만큼의 비율값을 받는데 목표값에 수렴하지 그값이 되지않음
+if문으로 따로 제어 해줘야함)
 lerp
 a와 b의 사이의 t만큼의 비율의 값을 반환 하는 함수 
 
@@ -112,5 +114,16 @@ input->mouse_wheel값으로 zoom거리 조정
 MouseZoom(), ColZoom() 추가 
 각각 입력조작과 충돌시 줌 기능을 가짐 
 CameraZoom()에서 사용
+
+추가 수정 
+1.
+ColZoom -> CaemraCheckColRay로 이름 변경 
+ref float target_pos 매계변수 추가
+-> CameraZoom에서 이동 변수 알아 볼 수 있게 변환
+CheckSphere-> r :0.25f 로변경
+SphereRay->r :1.0f
+distance +3.0f X
+3.0f 더하면 충돌시 이동 범위 빨라짐
+
 
 

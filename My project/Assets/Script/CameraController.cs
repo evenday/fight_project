@@ -89,14 +89,17 @@ public class CameraController : MonoBehaviour
         zoom_pos = Mathf.Clamp(zoom_pos, 2, 15);
     }
 
-    bool ColZoom()
+    bool CameraCheckColRay(ref float target_pos)
     {
         Vector3 ray_dir = main_camera.position - transform.position;
-        Debug.DrawRay(transform.position, ray_dir.normalized * (distance + 3.0f), Color.green);
 
-        if (Physics.SphereCast(transform.position, 1.0f, ray_dir.normalized, out RaycastHit hit, distance + 3.0f, layer_mask))
+        //Look Ray
+        if(Input.GetKey(KeyCode.Tab))
+            Debug.DrawRay(transform.position, ray_dir.normalized * distance , Color.green);
+
+        if (Physics.SphereCast(transform.position, 1.0f, ray_dir.normalized, out RaycastHit hit, distance, layer_mask))
         {
-            col_zoom_pos = hit.distance - 3.0f;
+            target_pos = hit.distance;
             return true;
         }
         else
@@ -112,10 +115,11 @@ public class CameraController : MonoBehaviour
 
     void CameraZoom() 
     {
-        if (Physics.CheckSphere(main_camera.position, 0.5f, layer_mask))
+        //check Camera field out
+        if (Physics.CheckSphere(main_camera.position, 0.2f, layer_mask))
             distance -= 1.0f;
 
-        if (ColZoom())
+        if (CameraCheckColRay(ref col_zoom_pos))
         {
             CameraSoothMove(col_zoom_pos);
         }
@@ -134,8 +138,8 @@ public class CameraController : MonoBehaviour
         yaw += mouse_x;
         pitch += mouse_y;
 
-        y_axis.localRotation = Quaternion.Euler(0, yaw, 0);
-        x_axis.localRotation = Quaternion.Euler(pitch, 0, 0);
+        y_axis.localRotation = Quaternion.Euler(0, yaw, 0);         //right left 
+        x_axis.localRotation = Quaternion.Euler(pitch, 0, 0);       //up down
 
     }
 }
