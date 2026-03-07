@@ -6,6 +6,10 @@ public class Player : MonoBehaviour
 {
     Rigidbody rigid;
 
+    float v;
+    float h;
+
+
 
     private void Awake()
     {
@@ -22,13 +26,17 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        float v = Input.GetAxis("Vertical"); 
+        float h = Input.GetAxis("Horizontal");
+        
+       
 
     }
 
     private void FixedUpdate()
     {
         
-
+        
 
     }
 }
