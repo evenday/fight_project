@@ -2,6 +2,28 @@ WASD로 조작 이동할때 누른 방향으로 이동
 회전 대각선이동 방향은 부드럽게 회전 
 이동 방향은 카메라가 보고 있는 방향으로 이동 
 
+캐릭터는 화면 기준으로 이동(앞 이동시 카메라가 보고 있는 방향으로 이동)
+-> moveposition(position * (player.position - main_camera).normalize)
+
 1. 캐릭터 이동 
 transform.position X
 -> 물리 충돌을 따로 계산 해줘야 함
+rigidbody.moveposition 사용 
+
+2.
+moveposition은 느낌이 매 입력마다 롤 처럼 위치를 찍는 느낌이여서 매 입력마다 이동 위치를 찍는 
+것 보다 속도를 설정 해주는게 나을 것 같아서 속도(velocity)를 설정 하는 걸로 수정
+
+2-1
+카메라가 보고있는 방향으로 이동(앞이동)
+캐릭터위치 - 메인 카메라 (y = 0) X
+
+2-2
+camera.forward, camera.right(y = 0)
+2-1과 비교 했을때 0.06 정도의 차이가 있음 
+-> 카메라가 보고있는 방향을 기준으로 이동 할거라 기준을 카메라의 프로포티 사용
+
+camera.forward.z * v
+camera.right.x * h
+v, h : 키입력 값(이 값으로 앞뒤, 오왼, 이동 제어)
+

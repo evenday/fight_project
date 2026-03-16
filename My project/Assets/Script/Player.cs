@@ -2,15 +2,18 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Animations;
 
 public class Player : MonoBehaviour
 {
     Rigidbody rigid;
-    Animator anim;
+    //Animator anim;
+
+    public Transform main_camera;
+
     [Header("Move Option")]
     public float move_speed = 1.0f;
-    Vector3 move_point;
-    Vector3 input_vec;
+    Vector3 move_dir;
     float v;
     float h;
 
@@ -18,7 +21,7 @@ public class Player : MonoBehaviour
     private void Awake()
     {
         rigid = GetComponent<Rigidbody>();
-        anim = GetComponentInChildren<Animator>();
+        //anim = GetComponentInChildren<Animator>();
     }
 
     // Start is called before the first frame update
@@ -29,8 +32,12 @@ public class Player : MonoBehaviour
 
     void FixedUpdate()
     {
-        move_point = rigid.position + input_vec * move_speed * Time.fixedDeltaTime;
-        rigid.MovePosition(move_point);
+
+        //rigid.velocity = new Vector3(move_dir.x * move_speed, rigid.velocity.y, move_dir.z * move_speed) ;
+        //Vector3 point = rigid.position  + move_dir * move_speed * look_camera_dir
+        //rigid.MovePosition()
+        rigid.velocity = move_dir.normalized * move_speed;
+
     }
 
     // Update is called once per frame
@@ -38,12 +45,12 @@ public class Player : MonoBehaviour
     {
         h = Input.GetAxis("Horizontal");
         v = Input.GetAxis("Vertical");
-        input_vec = new Vector3(h, 0, v);
 
-        Debug.Log(input_vec.normalized.magnitude);
+        move_dir = main_camera.forward * v +  main_camera.right * h;
+        move_dir.y = 0;
 
-        //anim.SetFloat("f_Walk", rigid.velocity);
-
+        Debug.DrawRay(transform.position, new Vector3(main_camera.forward.x, 0, main_camera.forward.z), Color.red);
+        Debug.Log(move_dir.normalized);
 
     }
     
