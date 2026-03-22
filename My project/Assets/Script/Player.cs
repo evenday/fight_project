@@ -32,11 +32,13 @@ public class Player : MonoBehaviour
 
     void FixedUpdate()
     {
-
-        //rigid.velocity = new Vector3(move_dir.x * move_speed, rigid.velocity.y, move_dir.z * move_speed) ;
-        //Vector3 point = rigid.position  + move_dir * move_speed * look_camera_dir
-        //rigid.MovePosition()
-        rigid.velocity = move_dir.normalized * move_speed;
+        rigid.MoveRotation(Quaternion.LookRotation(move_dir));
+        rigid.velocity = new Vector3
+            (
+                move_dir.x * move_speed,
+                rigid.velocity.y,
+                move_dir.z * move_speed
+            );
 
     }
 
@@ -46,13 +48,23 @@ public class Player : MonoBehaviour
         h = Input.GetAxis("Horizontal");
         v = Input.GetAxis("Vertical");
 
-        move_dir = main_camera.forward * v +  main_camera.right * h;
-        move_dir.y = 0;
-
-        Debug.DrawRay(transform.position, new Vector3(main_camera.forward.x, 0, main_camera.forward.z), Color.red);
-        Debug.Log(move_dir.normalized);
-
+        move_dir = InputMoveDirect();
+        //Debug.DrawRay(transform.position, move_dir, Color.red);
+        //Debug.Log(move_dir);   
     }
-    
+
+    Vector3 InputMoveDirect()
+    {
+        Vector3 forward_axis = main_camera.forward;
+        Vector3 right_axis = main_camera.right;
+
+        forward_axis.y = 0;
+        right_axis.y = 0;
+
+        forward_axis.Normalize();
+        right_axis.Normalize();
+
+        return forward_axis * v + right_axis * h;
+    }
  
 }

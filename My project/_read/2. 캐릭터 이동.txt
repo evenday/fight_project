@@ -27,3 +27,30 @@ camera.forward.z * v
 camera.right.x * h
 v, h : 키입력 값(이 값으로 앞뒤, 오왼, 이동 제어)
 
+main_camera.forward,right 가져 오고 y = 0할때 값이 (방향 벡터 1) 깨져서 y = 0으로 해주고
+ 다시 normalize 해줌
+(축이 깨짐 :
+(0,0.7,0.7)
+(1,0,0)
+y = 0으로 하면
+(0,0,0.7)
+(1,0,0)
+
+이동 방향이(1,0,1)이 아닌 
+(1,0,0.7)이됨 방향이 살짝 깨짐
+)
+
+2-2-1
+캐릭터 회전 
+fixedupdate 횟수와 
+udpate(transform.rotation)횟수가 다를수 있기 때문에 
+update에서 회전 시키면 회전이 씹힐 수 있어서 
+rixedupdate에서 rigid.moverotation으로 회전 시킴
+->rigid.MoveRotation(Quaternion.LookRotation(move_dir));
+
+2-2-1-1
+캐릭터 애니메이션
+
+
+
+
