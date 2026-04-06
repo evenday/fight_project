@@ -7,21 +7,21 @@ using UnityEngine.Animations;
 public class Player : MonoBehaviour
 {
     Rigidbody rigid;
-    //Animator anim;
+    Animator anim;
 
     public Transform main_camera;
 
     [Header("Move Option")]
     public float move_speed = 1.0f;
     Vector3 move_dir;
-    float v;
-    float h;
+    float input_v;
+    float input_h;
 
 
     private void Awake()
     {
         rigid = GetComponent<Rigidbody>();
-        //anim = GetComponentInChildren<Animator>();
+        anim = GetComponentInChildren<Animator>();
     }
 
     // Start is called before the first frame update
@@ -32,7 +32,11 @@ public class Player : MonoBehaviour
 
     void FixedUpdate()
     {
-        rigid.MoveRotation(Quaternion.LookRotation(move_dir));
+        //character rotation
+        if (Input.GetButton("Vertical") || Input.GetButton("Horizontal"))
+            rigid.MoveRotation(Quaternion.LookRotation(move_dir));
+        
+        //Move
         rigid.velocity = new Vector3
             (
                 move_dir.x * move_speed,
@@ -45,14 +49,27 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        h = Input.GetAxis("Horizontal");
-        v = Input.GetAxis("Vertical");
+        //Input Key
+        input_h = Input.GetAxis("Horizontal");
+        input_v = Input.GetAxis("Vertical");
 
+        //diraction    
         move_dir = InputMoveDirect();
-        //Debug.DrawRay(transform.position, move_dir, Color.red);
-        //Debug.Log(move_dir);   
+
+        //animation
+        if (Input.GetButton("Vertical") || Input.GetButton("Horizontal"))
+        {
+            Debug.Log("Not" );
+            anim.SetBool("b_Move", true);
+        }
+        else
+        {
+            anim.SetBool("b_Move", false);
+        }
+        
     }
 
+    //By Camera forward
     Vector3 InputMoveDirect()
     {
         Vector3 forward_axis = main_camera.forward;
@@ -64,7 +81,7 @@ public class Player : MonoBehaviour
         forward_axis.Normalize();
         right_axis.Normalize();
 
-        return forward_axis * v + right_axis * h;
+        return (forward_axis * input_v + right_axis * input_h).normalized;
     }
  
 }

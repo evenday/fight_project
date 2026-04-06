@@ -1,8 +1,6 @@
 WASD로 조작 이동할때 누른 방향으로 이동 
 회전 대각선이동 방향은 부드럽게 회전 
 이동 방향은 카메라가 보고 있는 방향으로 이동 
-걷는 시간이 특정 시간 이상이 될경우, shift혹은 마우스 우클릭시 회피모션후 달리기로 이동
-
 
 캐릭터는 화면 기준으로 이동(앞 이동시 카메라가 보고 있는 방향으로 이동)
 -> moveposition(position * (player.position - main_camera).normalize)
@@ -55,27 +53,14 @@ rixedupdate에서 rigid.moverotation으로 회전 시킴
 2-2-2
 2-2-1에서 입력이 끝날때 input.getaxis()로 인해 입력이 끝나면 0으로 값이 변하면서 
 대각선을 보고 있을때 입력을 끝내면 입려된 키 방향중 한곳으로 회전을함
-(대각선 방향으로 이동 후, 키 입력을 안할 시 앞,뒤,오른쪽,왼쪽 중 한곳으로 방향이 바뀜 )  
+(입력이 끝나고 난 후 회전이진행됨)  
 
 if(move_dir != Vector3.zero && (input.getButton("horizontai" || input.getButton("vertical"))))
 로 키입력될때 동안 회전 하도록함(입력이 끝났을때 바로 회전 끝)
 
 2-2-1-1
 캐릭터 애니메이션
-udpate에 캐릭터 이동 
-if(move_dir != Vector3.zero && (input.getButton("horizontai" || input.getButton("vertical"))))
-에서 true이면 
-animator의 파라미터 b_Move 를 true로(아닐시 false)
 
-2-2-1-2
-if(move_dir != Vector3.zero && (input.getButton("horizontai" || input.getButton("vertical"))))
--> if (Input.GetButton("Vertical") || Input.GetButton("Horizontal"))
-키 입력 시 만 체크 
-move_dir != Vector3.zero 방향 교체시 (0,0,0)이 되는 순간이 있어서 else로 넘어가는 현상이 생김
-(애니메이션이 중간에 idle로 바뀌거나, 회전이 멈춤 현상)
 
-2-2-1-2-1
-캐릭터 달리기 
-걷는 시간이 특정 시간 이상이 될경우, shift혹은 마우스 우클릭시 회피모션후 달리기로 이동
 
 
