@@ -1,6 +1,8 @@
 WASD로 조작 이동할때 누른 방향으로 이동 
 회전 대각선이동 방향은 부드럽게 회전 
 이동 방향은 카메라가 보고 있는 방향으로 이동 
+걷는 시간이 특정 시간 이상이 될경우, shift혹은 마우스 우클릭시 회피모션후 달리기로 이동
+
 
 캐릭터는 화면 기준으로 이동(앞 이동시 카메라가 보고 있는 방향으로 이동)
 -> moveposition(position * (player.position - main_camera).normalize)
@@ -53,13 +55,126 @@ rixedupdate에서 rigid.moverotation으로 회전 시킴
 2-2-2
 2-2-1에서 입력이 끝날때 input.getaxis()로 인해 입력이 끝나면 0으로 값이 변하면서 
 대각선을 보고 있을때 입력을 끝내면 입려된 키 방향중 한곳으로 회전을함
-(입력이 끝나고 난 후 회전이진행됨)  
+(대각선 방향으로 이동 후, 키 입력을 안할 시 앞,뒤,오른쪽,왼쪽 중 한곳으로 방향이 바뀜 )  
 
 if(move_dir != Vector3.zero && (input.getButton("horizontai" || input.getButton("vertical"))))
 로 키입력될때 동안 회전 하도록함(입력이 끝났을때 바로 회전 끝)
 
 2-2-1-1
 캐릭터 애니메이션
+udpate에 캐릭터 이동 
+if(move_dir != Vector3.zero && (input.getButton("horizontai" || input.getButton("vertical"))))
+에서 true이면 
+animator의 파라미터 b_Move 를 true로(아닐시 false)
+
+2-2-1-2
+if(move_dir != Vector3.zero && (input.getButton("horizontai" || input.getButton("vertical"))))
+-> if (Input.GetButton("Vertical") || Input.GetButton("Horizontal"))
+키 입력 시 만 체크 
+move_dir != Vector3.zero 방향 교체시 (0,0,0)이 되는 순간이 있어서 else로 넘어가는 현상이 생김
+(애니메이션이 중간에 idle로 바뀌거나, 회전이 멈춤 현상)
+
+=================================================================
+3.캐릭터 달리기 
+걷는 시간이 특정 시간 이상이 될경우, shift혹은 마우스 우클릭시 회피모션후(누를는 상태X) 달리기로 이동
+(run 모션 속도 변경 (1 -> 1.5))
+
+3-1
+달리는 상황에서 키 입력 중지 시 
+끈기는 느낌 발생
+
+-> animator에 
+두 애니메이션 변환시 (tranform Duration)섞음
+
+
+===================================================================
+4.캐릭터 대각선 이동 + 대각선 이동 하고있는 방향으로 화면을 회전 시킬시 그 방향으로 캐릭터 (z축)
+회전 
+
+player.cs에 CameraManager의 CameraController컴퍼넌트 가져오기 
+[SerializeField] CameraController
+
+if 이동 중일때, 화면 회전시()
+z축 회전 주기()
+
+
+4-1
+키보드 입력으로 받는 회전과 z축 기준 회전이 충돌해서 회전이 이상하게됨
+->회전은 한번만 적용되기 때문에 두개의 회전 값들을 Quaternion으로 저장후 
+fixedupdate -> rigid.MoveRotation에서 두개 의 값을 곱해서 적용
+
+4-2 
+마우스가 X축 방향으로 이동시 그 방향으로 캐릭터가 Z축으로 회전 해야함
+GetAxis("Mouse X")는 마우스가 X축으로 이동 시 그 이동 속도 반환 해서 
+이 값 차제를 회전 값이나 조건 으로 쓰기 힘듬 
+
+->GetAxis("Mouse X")으로 마우스 좌우 이동 만 체크
+특정 target 각도값을 설정 하고 
+mathf.smoothdamp로 자연스럽게 회전 하도록함
+
+4-2-1
+캐릭터 전체를 z축으로 회전 시키니 발쪽 메시가 바닥을 살짝 통과함
+캐릭터 모델에 body를 대상으로만 회전 
+
+Transform main_camera
+CameraController cam_rot_val
+인스펙터로 동일한 오브젝트를 가지고 옴(-> 오브젝트에 들어감 컴퍼넌트들은 transform을 각각 가지고 있음)
+
+1. 지금 상태 그대로 둠
+-> 코드 볼 때 변수를 이름으로 역활을 알 수 있음 
+
+2. CameraController컴퍼넌트 하나만 가지고 있게 함 
+-> 변수 하나로 값을 관리 할수 있음
+
+-> 2
+(1 방식대로 만들다 보면 코드가 길어질것 같아서 2번으로)
+Main Camera 정보가 필요 하므로 CameraController이 가지고 있는 main_camera를
+ public로 설정 
+
+**** 회전 시 적용이 안됨()
+
+4-2-2
+회전적용시 애니메이션에서 설정된 각각의 하위 메시의 position, rotation이 덮어 써져 적용이 안됨
+
+->모델 자식 메시중 body부분의 하위 자식들을 빈오브젝트로 묶고, 그 빈오브젝트를 회전
+
+target_mesh.localRotation =Quaternion.Euler(0, 0, cur_rot_z);
+
+
+*** 회전은 되지만 살짝 이질감이 느껴짐 
+(사람이 회전 이나 급커브를 할때 뒤딤 발 기준으로 힘이 적용되는 반대 반향으로 몸을 기움)
+
+4-2-3
+회전 적용 축을 각각의 발위쪽으로 적용
+(오른쪽으로 회전하면서 이동 시 왼발 위쪽을 중심으로 회전 
+왼쪽 으로 회전하면서 이동 시 오른발 위쪽을 중심으로 회전 )
+모델의 상체 메시들을 L_Pivot,R_Pivot으로 묶음 
+마우스 회전 방향이 왼쪽이면 L_Pivot 기준으로
+마우스 회전 방향이 오른쪽이면 R_Pivot 기준으로 회전
+
+*** 좌우 마우스 회전시 상체가 눌림 현상 발생 
+
+4-2-4
+한 방향으로 회전 한 상황에서 다른 방향으로 회전 시 원 상태로 돌아온 후 다시 회전을 진행 시켜야함
+
+-> 몸체밑에 한점을 기준으로 회전시 이점 을 회전 반대 방향으로 이동 후 그점 기준으로 몸체 기울기
+
+l_pivot, r_pivot -> lean_pivot
+
+4-2-5
+달리기 시 에만 상체 기울기 적용
+
+변경 점
+기존: rigid.MoveRotation을 이용 
+신규: update()에서 
+transform.Rotation = Quaternion.Euler(...)
+-> 회전은 물리랑 상관 없어서 transform으로 변경 
+
+
+
+
+======================================================================
+
 
 
 

@@ -5,17 +5,25 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
-    public Vector3 offset = new Vector3(0, 0, 0);   //CameraManager 시작 위치(target.position + offset)
+    [SerializeField] Vector3 offset = new Vector3(0, 0, 0);   //CameraManager 시작 위치(target.position + offset)
     [Header("Target")]
-    public Transform target;
+    [SerializeField] Transform target;
     [Header("Rotation Axis")]
-    public Transform y_axis;                        //Y axis Object.transform
-    public Transform x_axis;                        //X axis Object.transform
+    [SerializeField] Transform y_axis;                        //Y axis Object.transform
+    [SerializeField] Transform x_axis;                        //X axis Object.transform
     [Header("Camera")]
-    public Transform main_camera;
-    public float distance = 12;
+    [SerializeField] Transform main_camera; 
+    public Transform camera_trans 
+    {
+        get { return main_camera.transform; }
+        set { main_camera = value; }
+    }
+
+    [SerializeField] float distance = 12;
     //public float camera_velocity = 0.0f;
-    public float rot_sensitiv = 1.0f;
+    [SerializeField] float rot_sensitiv = 1.0f;
+
+
 
     //Zoom
     int layer_mask;
@@ -26,7 +34,7 @@ public class CameraController : MonoBehaviour
     float current_velocity = 0.0f;                  //Current camera move velocity(out value)
 
     //rotation
-    float mouse_x;
+    public float mouse_x { get; private set; } 
     float mouse_y;
     float yaw = 0.0f;                               //right, left
     float pitch = 0.0f;                             //up, down
@@ -53,15 +61,14 @@ public class CameraController : MonoBehaviour
     private void Update()
     {
         //rotation Input
-        mouse_x = Input.GetAxisRaw("Mouse X") * rot_sensitiv;
-        mouse_y = Input.GetAxisRaw("Mouse Y") * rot_sensitiv;
+        mouse_x = Input.GetAxis("Mouse X") * rot_sensitiv;
+        mouse_y = Input.GetAxis("Mouse Y") * rot_sensitiv;
 
         //Mouse wheel Input
         mouse_wheel = Input.GetAxis("Mouse ScrollWheel");
 
-
     }
-    
+
     void LateUpdate()
     {
         //Camera 
@@ -134,9 +141,11 @@ public class CameraController : MonoBehaviour
     void CameraRotation()
     {
         //상하 카메라 회전 제한
-        pitch = Mathf.Clamp(pitch, -40, 80);
         yaw += mouse_x;
         pitch += mouse_y;
+
+        pitch = Mathf.Clamp(pitch, -40, 80);
+
 
         y_axis.localRotation = Quaternion.Euler(0, yaw, 0);         //right left 
         x_axis.localRotation = Quaternion.Euler(pitch, 0, 0);       //up down
