@@ -170,7 +170,8 @@ l_pivot, r_pivot -> lean_pivot
 transform.Rotation = Quaternion.Euler(...)
 -> 회전은 물리랑 상관 없어서 transform으로 변경 
 
-
+4-2-5-1
+달리고 있을 떄에만 기울기 적용
 
 
 ======================================================================

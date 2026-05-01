@@ -42,7 +42,7 @@ public class Player : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
+        
     }
 
     void FixedUpdate()
@@ -54,7 +54,7 @@ public class Player : MonoBehaviour
                 rigid.velocity.y,
                 move_dir.z * cur_speed
             );
-
+        
     }
 
     // Update is called once per frame
@@ -70,10 +70,11 @@ public class Player : MonoBehaviour
         //Walk animation, current speed setting
         if (Input.GetButton("Vertical") || Input.GetButton("Horizontal"))
         {
-            anim.SetBool("b_Move", true);
 
             if (!anim.GetBool("b_Run"))
                 cur_speed = walk_speed;
+
+            anim.SetBool("b_Move", true);
         }
         else
         {
@@ -87,28 +88,26 @@ public class Player : MonoBehaviour
         }
 
         //Run animation, current speed setting;
-        if (Input.GetKeyDown(KeyCode.LeftShift))
+        if (Input.GetKeyDown(KeyCode.LeftShift) && anim.GetBool("b_Move"))
         {
             anim.SetBool("b_Run", true);
+            
             cur_speed = run_speed;
         }
 
 
-        //rotation Z_Axis 
-        if (cam_data.mouse_x > 0.01f)
+        //Lean Controller
+        if (cur_speed >= run_speed)
         {
-            target_z = -max_lean;
-        }
-        else if (cam_data.mouse_x < -0.01f)
-        {
-            target_z = max_lean;
+            target_z = GetMouseRotLeanValue(cam_data.mouse_x);
+
+            cur_rot_z = Mathf.SmoothDamp(cur_rot_z, target_z, ref smooth_vel, smooth_time);
         }
         else
             target_z = 0.0f;
 
-        cur_rot_z = Mathf.SmoothDamp(cur_rot_z, target_z, ref smooth_vel, smooth_time);
-
         lean_pivot.localRotation = Quaternion.Euler(0, 0, cur_rot_z);
+
 
         //rotation
         if (move_dir != Vector3.zero && (Input.GetButton("Vertical") || Input.GetButton("Horizontal")))
@@ -116,9 +115,7 @@ public class Player : MonoBehaviour
 
     }
 
-    void LateUpdate()
-    {
-    }
+
 
     //By Camera forward
     Vector3 InputMoveDirect()
@@ -135,4 +132,18 @@ public class Player : MonoBehaviour
         return (forward_axis * input_v + right_axis * input_h).normalized;
     }
  
+    float GetMouseRotLeanValue(float Mouse_rot_value)
+    {
+        if (Mouse_rot_value > 0.01f)
+        {
+            return -max_lean;
+        }
+        else if (Mouse_rot_value < -0.01f)
+        {
+            return max_lean;
+        }
+        else
+            return  0.0f;
+    }
+
 }

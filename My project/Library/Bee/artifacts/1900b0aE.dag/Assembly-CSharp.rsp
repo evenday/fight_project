@@ -361,6 +361,7 @@
 "Assets/Bolt 2D LittleWars VE3/ReadMe/Scripts/ReadmeVE3.cs"
 "Assets/QuarterView 3D Action BE5/ReadMe/Scripts/ReadmeBE5.cs"
 "Assets/Script/CameraController.cs"
+"Assets/Script/Enemy.cs"
 "Assets/Script/Player.cs"
 -langversion:9.0
 /deterministic

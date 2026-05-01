@@ -1,0 +1,33 @@
+float GetLeanValue()
+{
+        if (cam_data.mouse_x > 0.01f)
+        {
+            return -max_lean;
+        }
+        else if (cam_data.mouse_x < -0.01f)
+        {
+            return max_lean;
+        }
+        else
+            return  0.0f;
+}
+
+-> float GetMouseRotLeanValue(float Mouse_rot_value);
+    {
+        if (Mouse_rot_value > 0.01f)
+        {
+            return -max_lean;
+        }
+        else if (Mouse_rot_value < -0.01f)
+        {
+            return max_lean;
+        }
+        else
+            return  0.0f;
+    }
+
+
+
+
+
+

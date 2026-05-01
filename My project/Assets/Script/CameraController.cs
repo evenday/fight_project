@@ -56,6 +56,8 @@ public class CameraController : MonoBehaviour
         //Collider LayerMask Setting
         layer_mask = LayerMask.GetMask("Floor", "Wall");
 
+       
+
     }
 
     private void Update()
@@ -125,7 +127,7 @@ public class CameraController : MonoBehaviour
         //check Camera field out
         if (Physics.CheckSphere(main_camera.position, 0.2f, layer_mask))
             distance -= 1.0f;
-
+        //Physics.CheckSphere(,)
         if (CameraCheckColRay(ref col_zoom_pos))
         {
             CameraSoothMove(col_zoom_pos);
@@ -136,7 +138,6 @@ public class CameraController : MonoBehaviour
             CameraSoothMove(zoom_pos);
         }    
     }
-
 
     void CameraRotation()
     {
