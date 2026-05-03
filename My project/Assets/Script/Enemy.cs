@@ -6,23 +6,26 @@ using UnityEngine;
 public class Enemy : MonoBehaviour
 {
     //[SerializeField] float move_speed = 5.0f;
-    [SerializeField] float next_action_max_time = 15.0f;
-    [SerializeField] float next_action_min_time = 8.0f;
+    [SerializeField] float change_random_time_max = 5.0f;
+    [SerializeField] float change_random_time_min = 1.0f;
     [SerializeField] float move_speed = 10.0f;
 
     Rigidbody rigid;
     Vector3 move_dir;
-    float accumulated_time = 0.0f;
-    float next_action_time = 0.0f;
+    float accumulated_time = 0.0f;                      //Current time
+    float pattern_chanage_time = 0.0f;                   //Next pattern change time (compare accumlated_time)
     float cur_speed = 0.0f;
     bool action = true;
+
+    HashSet<Collider> col_check = new HashSet<Collider>();  //search_objects layer check
+
 
 
     private void Awake()
     {
         rigid = GetComponent<Rigidbody>();
         move_dir = RandomDirect();
-        next_action_time = Random.Range(next_action_min_time, next_action_max_time);
+        pattern_chanage_time = Random.Range(change_random_time_min, change_random_time_max);
 
     }
 
@@ -43,28 +46,13 @@ public class Enemy : MonoBehaviour
     {
         accumulated_time += Time.deltaTime;
 
-        //True action value
-        if (accumulated_time >= next_action_time)
-        {  
-            action = !action;            
-            next_action_time = Random.Range(next_action_min_time, next_action_max_time);
-            
-            if(action)
-                move_dir = RandomDirect();
 
-            accumulated_time = 0.0f;   
+        MovePattern( accumulated_time, ref pattern_chanage_time, ref action);
 
-        }
 
-        //set move_speed 
-        if (action)
-        {
-            cur_speed = move_speed;
 
-            transform.rotation = Quaternion.LookRotation(move_dir);
-        }
-        else
-            cur_speed = 0.0f;
+        Debug.Log("Change_time " + pattern_chanage_time);
+        Debug.Log("accumulated_time " + accumulated_time);
 
 
 
@@ -72,7 +60,13 @@ public class Enemy : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log("Collsion");
+        if (!col_check.Add(other))
+            return;
+
+        Debug.Log("check");
+
+
+
     }
 
 
@@ -80,6 +74,34 @@ public class Enemy : MonoBehaviour
     Vector3 RandomDirect()
     {
         return new Vector3(Random.Range(-1.0f, 1.0f), 0.0f, Random.Range(-1.0f, 1.0f)).normalized;
+    }
+
+    //True action value
+    bool ChangeMovePattern(float Cur_time, ref float Change_time)
+    {
+        if (Cur_time <= Change_time)
+            return false;
+
+        Change_time = Random.Range(change_random_time_min, change_random_time_max);
+        move_dir = RandomDirect();
+        accumulated_time = 0.0f;
+
+        return true;
+    }
+
+    //set move_speed, rotation
+    void MovePattern(float Cur_time, ref float Change_time, ref bool Action)
+    {
+        if (Action)
+        {
+            cur_speed = move_speed;
+            transform.rotation = Quaternion.LookRotation(move_dir);
+        }
+        else
+            cur_speed = 0.0f;
+
+        if (ChangeMovePattern(Cur_time, ref Change_time))
+            Action = !Action;
     }
 
 
