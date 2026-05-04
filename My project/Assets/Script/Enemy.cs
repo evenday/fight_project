@@ -10,13 +10,15 @@ public class Enemy : MonoBehaviour
     [SerializeField] float change_random_time_min = 1.0f;
     [SerializeField] float move_speed = 10.0f;
 
+
     Rigidbody rigid;
+    Animator anim;
     Vector3 move_dir;
     float accumulated_time = 0.0f;                      //Current time
     float pattern_chanage_time = 0.0f;                   //Next pattern change time (compare accumlated_time)
     float cur_speed = 0.0f;
     bool action = true;
-
+    bool chase = false;
     HashSet<Collider> col_check = new HashSet<Collider>();  //search_objects layer check
 
 
@@ -24,6 +26,7 @@ public class Enemy : MonoBehaviour
     private void Awake()
     {
         rigid = GetComponent<Rigidbody>();
+        anim = GetComponentInChildren<Animator>();
         move_dir = RandomDirect();
         pattern_chanage_time = Random.Range(change_random_time_min, change_random_time_max);
 
@@ -46,30 +49,49 @@ public class Enemy : MonoBehaviour
     {
         accumulated_time += Time.deltaTime;
 
-
+        anim.enabled = false;
         MovePattern( accumulated_time, ref pattern_chanage_time, ref action);
 
+        //walk animation
+        anim.SetFloat("f_move_speed", rigid.velocity.magnitude);
 
 
-        Debug.Log("Change_time " + pattern_chanage_time);
-        Debug.Log("accumulated_time " + accumulated_time);
+        //Debug.Log("Change_time " + pattern_chanage_time);
+        //Debug.Log("accumulated_time " + accumulated_time);
 
 
 
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void OnTriggerStay(Collider other)
     {
         if (!col_check.Add(other))
             return;
 
-        Debug.Log("check");
+        if (!(other.gameObject.tag == "Player"))
+            return;
 
+        chase = true;
 
-
+        Vector3 target_dir = (other.gameObject.transform.position - transform.position).normalized;
+        move_dir = target_dir;
     }
 
+    private void OnTriggerExit(Collider other)
+    {
 
+        if (!col_check.Remove(other))
+            return;
+
+        if (other.gameObject.tag == "Player")
+        {
+            Debug.Log("out");
+            chase = false;
+        }
+        
+
+    }
+    
 
     Vector3 RandomDirect()
     {
@@ -83,7 +105,10 @@ public class Enemy : MonoBehaviour
             return false;
 
         Change_time = Random.Range(change_random_time_min, change_random_time_max);
-        move_dir = RandomDirect();
+
+        if(!chase)
+            move_dir = RandomDirect();
+
         accumulated_time = 0.0f;
 
         return true;

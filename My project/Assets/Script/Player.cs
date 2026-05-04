@@ -26,8 +26,8 @@ public class Player : MonoBehaviour
     [Header("rot Option")]
     [SerializeField] Transform lean_pivot;
     [SerializeField] float max_lean = 15.0f;
-    float cur_rot_z = 0.0f;
-    float target_z = 0.0f;
+    float cur_lean = 0.0f;
+    float target_lean = 0.0f;
     float smooth_vel = 0.0f;
     float smooth_time = 0.1f;
 
@@ -70,46 +70,35 @@ public class Player : MonoBehaviour
         //Walk animation, current speed setting
         if (Input.GetButton("Vertical") || Input.GetButton("Horizontal"))
         {
+            cur_speed = walk_speed;
 
-            if (!anim.GetBool("b_Run"))
-                cur_speed = walk_speed;
+            //run
+            if (Input.GetKey(KeyCode.LeftShift))
+            {
+                cur_speed = run_speed;
 
-            anim.SetBool("b_Move", true);
+                //Lean rotation
+                target_lean = GetMouseRotLeanValue(cam_data.mouse_x);
+
+            }
+            else
+                target_lean = 0.0f;        //lean init
         }
         else
-        {
-            if (anim.GetBool("b_Run"))
-                anim.SetBool("b_Run", false);
+            cur_speed = 0.0f;   //speed init
 
-            anim.SetBool("b_Move", false);
+      
 
-            //currnet speed init
-            cur_speed = 0.0f;
-        }
+        //=======================================apply========================================================
 
-        //Run animation, current speed setting;
-        if (Input.GetKeyDown(KeyCode.LeftShift) && anim.GetBool("b_Move"))
-        {
-            anim.SetBool("b_Run", true);
-            
-            cur_speed = run_speed;
-        }
+        //Anim 
+        anim.SetFloat("f_move_speed", rigid.velocity.magnitude);
 
+        //Lean apply
+        cur_lean = Mathf.SmoothDamp(cur_lean, target_lean, ref smooth_vel, smooth_time);
+        lean_pivot.localRotation = Quaternion.Euler(0, 0, cur_lean);
 
-        //Lean Controller
-        if (cur_speed >= run_speed)
-        {
-            target_z = GetMouseRotLeanValue(cam_data.mouse_x);
-
-            cur_rot_z = Mathf.SmoothDamp(cur_rot_z, target_z, ref smooth_vel, smooth_time);
-        }
-        else
-            target_z = 0.0f;
-
-        lean_pivot.localRotation = Quaternion.Euler(0, 0, cur_rot_z);
-
-
-        //rotation
+        //Charactor move rotation 
         if (move_dir != Vector3.zero && (Input.GetButton("Vertical") || Input.GetButton("Horizontal")))
             transform.rotation = Quaternion.LookRotation(move_dir);
 

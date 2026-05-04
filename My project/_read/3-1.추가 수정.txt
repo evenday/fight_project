@@ -1,3 +1,4 @@
+회전시 기울기 반환 함수 변경
 float GetLeanValue()
 {
         if (cam_data.mouse_x > 0.01f)
@@ -25,7 +26,8 @@ float GetLeanValue()
         else
             return  0.0f;
     }
-
+==============================================================
+player 애니메이션 bool값이 아닌 속도(velocity)값으로 설정
 
 
 
