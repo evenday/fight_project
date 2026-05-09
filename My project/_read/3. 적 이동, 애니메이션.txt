@@ -6,11 +6,15 @@
 X, Z 축으로 랜덤값 받아 그 방향으로 일정 시간 만큼 이동 
 시간 
 (시간 누적 += TIme.deltaTime) >= 일정 시간(랜덤값) |
-이면 랜덤 방향값 받기
+이면 랜덤 방향값 받고 action change_pattern_time이 누적 시간 넘을 시 action = !action
+으로 변경
+ChangePatte
 
-이동 또는 가만히 서 있기
-action bool값으로 true일 때는 이동, false일 때는 제자리에 서있기
 
+action = true
+이동 
+action = false
+이동 X
 =========================================================
 플레이어 탐색 및 따라가기
 플레이어를 탐색할 Trriger 넣고, 탐색 Trriger에 플레이어가 들어올 시 플레이어 따라가기 
@@ -19,7 +23,34 @@ action bool값으로 true일 때는 이동, false일 때는 제자리에 서있�
 ->idle애니메이션에 주변을 둘러보는 모션에서 collider들이 움직이지 않아
 적 모델에 Bone_Body자식으로 넣어서 상체가 움직일때 collider도 같이 움직이게 함 
 
-이동 Trigger에 걸릴 시 bool chase를 true로 변경 후 랜덤 direction값에서 player의 방향으로 이동
+1-1.
+대상(player)을 따라 움직일 때 빠르게 움직이게 하기위해 run_speed를 추가
+
+기본 이동 			추적 이동
+cur_speed = walk_speed		cur_speed = run_speed
+
+뛰는 애니메이션이 없어서 Animator에서 현재 실행 중인 애니메이션 속도를 증가 시킴(2배)
+anim.speed = 2.0f;
+
+
+==>
+이동 중 Trigger에 걸릴 시 bool chase를 true로 변경 후 랜덤 direction값에서 player의 방향으로 이동
+
+ChangeMovePattern() -> ChangeActionPattern()
+accumulated_time, chage_pattern_time 값 초기화
+
+MovePattern() -> PatternExe()
+움직이는 방향과 속도 교체
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -8,19 +8,20 @@ public class Enemy : MonoBehaviour
     //[SerializeField] float move_speed = 5.0f;
     [SerializeField] float change_random_time_max = 5.0f;
     [SerializeField] float change_random_time_min = 1.0f;
-    [SerializeField] float move_speed = 10.0f;
-
+    [SerializeField] float walk_speed = 9.0f;
+    [SerializeField] float run_speed = 13.0f;
+    HashSet<Collider> col_check = new HashSet<Collider>();  //search_objects layer check
 
     Rigidbody rigid;
     Animator anim;
+    Transform target;                                   //Trigger Collider gameobject.transform
     Vector3 move_dir;
     float accumulated_time = 0.0f;                      //Current time
-    float pattern_chanage_time = 0.0f;                   //Next pattern change time (compare accumlated_time)
+    float chanage_pattern_time = 0.0f;                  //Next pattern change time (compare accumlated_time)
     float cur_speed = 0.0f;
     bool action = true;
-    bool chase = false;
-    HashSet<Collider> col_check = new HashSet<Collider>();  //search_objects layer check
 
+    bool chase = false;
 
 
     private void Awake()
@@ -28,7 +29,7 @@ public class Enemy : MonoBehaviour
         rigid = GetComponent<Rigidbody>();
         anim = GetComponentInChildren<Animator>();
         move_dir = RandomDirect();
-        pattern_chanage_time = Random.Range(change_random_time_min, change_random_time_max);
+        chanage_pattern_time = Random.Range(change_random_time_min, change_random_time_max);
 
     }
 
@@ -49,15 +50,16 @@ public class Enemy : MonoBehaviour
     {
         accumulated_time += Time.deltaTime;
 
-        anim.enabled = false;
-        MovePattern( accumulated_time, ref pattern_chanage_time, ref action);
+        //anim.enabled = false;
+        PatternExe( accumulated_time, ref chanage_pattern_time, ref action);
 
         //walk animation
         anim.SetFloat("f_move_speed", rigid.velocity.magnitude);
 
 
-        //Debug.Log("Change_time " + pattern_chanage_time);
-        //Debug.Log("accumulated_time " + accumulated_time);
+        Debug.Log("chanage_pattern_time " + chanage_pattern_time);
+        Debug.Log("accumulated_time " + accumulated_time);
+
 
 
 
@@ -68,13 +70,16 @@ public class Enemy : MonoBehaviour
         if (!col_check.Add(other))
             return;
 
-        if (!(other.gameObject.tag == "Player"))
-            return;
+        if (other.gameObject.tag == "Player")
+        {
+            action = true;
+            chase = true;
 
-        chase = true;
+            target = other.transform;
+        }
 
-        Vector3 target_dir = (other.gameObject.transform.position - transform.position).normalized;
-        move_dir = target_dir;
+
+        
     }
 
     private void OnTriggerExit(Collider other)
@@ -85,8 +90,10 @@ public class Enemy : MonoBehaviour
 
         if (other.gameObject.tag == "Player")
         {
+
             Debug.Log("out");
             chase = false;
+            action = false;
         }
         
 
@@ -98,35 +105,57 @@ public class Enemy : MonoBehaviour
         return new Vector3(Random.Range(-1.0f, 1.0f), 0.0f, Random.Range(-1.0f, 1.0f)).normalized;
     }
 
-    //True action value
-    bool ChangeMovePattern(float Cur_time, ref float Change_time)
+    //Init change_pattern_time, move_dir(Random)
+    void InitValue(float Cur_Time, ref float Change_time)
     {
-        if (Cur_time <= Change_time)
-            return false;
-
         Change_time = Random.Range(change_random_time_min, change_random_time_max);
 
-        if(!chase)
+        if (!chase)
             move_dir = RandomDirect();
 
         accumulated_time = 0.0f;
+    }
 
-        return true;
+    //
+    void ChangeActionPattern(float Cur_time, ref float Change_time, ref bool Action)
+    {
+        if (Cur_time <= Change_time || chase)
+            return;
+
+        InitValue(Cur_time, ref Change_time);
+
+        Action = !Action;
     }
 
     //set move_speed, rotation
-    void MovePattern(float Cur_time, ref float Change_time, ref bool Action)
+    void PatternExe(float Cur_time, ref float Change_time, ref bool Action)
     {
+        //Pattern Change
+        ChangeActionPattern(Cur_time, ref Change_time, ref Action);
+
         if (Action)
         {
-            cur_speed = move_speed;
+
+            //Chase Move(target -> Player)
+            if (chase)       
+            {
+                Vector3 target_dir = target.transform.position - transform.position;
+                move_dir = new Vector3(target_dir.x, 0.0f, target_dir.z).normalized;
+
+                anim.speed = 2.0f;
+
+                cur_speed = run_speed;
+            }
+            else //Move
+                cur_speed = walk_speed;
+
+
+            //rotation
             transform.rotation = Quaternion.LookRotation(move_dir);
         }
         else
             cur_speed = 0.0f;
 
-        if (ChangeMovePattern(Cur_time, ref Change_time))
-            Action = !Action;
     }
 
 

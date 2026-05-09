@@ -16,8 +16,8 @@ public class Player : MonoBehaviour
 
 
     [Header("Move Option")]
-    public float walk_speed = 10.0f;
-    public float run_speed = 15.0f;
+    [SerializeField] float walk_speed = 10.0f;
+    [SerializeField] float run_speed = 15.0f;
     Vector3 move_dir;
     float cur_speed = 0.0f;
     float input_v;
@@ -85,9 +85,13 @@ public class Player : MonoBehaviour
                 target_lean = 0.0f;        //lean init
         }
         else
+        {
             cur_speed = 0.0f;   //speed init
+            target_lean = 0.0f;        //lean init
 
-      
+        }
+
+
 
         //=======================================apply========================================================
 
