@@ -5,158 +5,245 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
-    //[SerializeField] float move_speed = 5.0f;
-    [SerializeField] float change_random_time_max = 5.0f;
-    [SerializeField] float change_random_time_min = 1.0f;
-    [SerializeField] float walk_speed = 9.0f;
-    [SerializeField] float run_speed = 13.0f;
-    HashSet<Collider> col_check = new HashSet<Collider>();  //search_objects layer check
+    enum State
+    {
+        Idle,
+        Move,
+        Chase,
+        Attack
+    };
+
+    //Test
+    [SerializeField] GameObject test_obj;
 
     Rigidbody rigid;
     Animator anim;
-    Transform target;                                   //Trigger Collider gameobject.transform
-    Vector3 move_dir;
-    float accumulated_time = 0.0f;                      //Current time
-    float chanage_pattern_time = 0.0f;                  //Next pattern change time (compare accumlated_time)
-    float cur_speed = 0.0f;
-    bool action = true;
 
-    bool chase = false;
+    //Control action values
+    [SerializeField] State cur_state;
+    [SerializeField] float pattern_duration_time_max = 5.0f;    //Random time Max
+    [SerializeField] float pattern_duration_time_min = 1.0f;    //Rnadom time min
+    float accumulated_time = 0.0f;                              //Current time
+    float pattern_duration_time = 0.0f;                         //pattern duration time (compare accumlated_time)
+    float cur_speed = 0.0f;
+
+
+    //Move pattern
+    Vector3 move_dir;                                   //if not chase state move direction
+    [SerializeField] float walk_speed = 9.0f;
+
+    //Chase
+    HashSet<Collider> col_check = new HashSet<Collider>();      //search_objects layer check
+    [SerializeField] float run_speed = 13.0f;
+
+    //Battle
+    [SerializeField] float attack_range = 5.0f;
+    [SerializeField] float attack_delay_time = 2.0f;
+    Transform target;                                           //Collider->Trigger Set gameobject.transform(tag == Player)
+    float accumulated_attack_cooldown = 0.0f;                   //wait after attack
+    float target_distance = 0.0f;                               //(target.position - transform.position).magnitude
+
 
 
     private void Awake()
     {
         rigid = GetComponent<Rigidbody>();
         anim = GetComponentInChildren<Animator>();
-        move_dir = RandomDirect();
-        chanage_pattern_time = Random.Range(change_random_time_min, change_random_time_max);
+
 
     }
 
     void Start()
     {
+        move_dir = RandomDirect();
+        pattern_duration_time = Random.Range(pattern_duration_time_min, pattern_duration_time_max);
+        accumulated_attack_cooldown = attack_delay_time;
         
+        
+        test_obj.SetActive(false);
+
     }
 
     private void FixedUpdate()
     {
         rigid.velocity = new Vector3(
-            move_dir.x * cur_speed, 
-            rigid.velocity.y, 
+            move_dir.x * cur_speed,
+            rigid.velocity.y,
             move_dir.z * cur_speed);
-    }
-
-    void Update()
-    {
-        accumulated_time += Time.deltaTime;
-
-        //anim.enabled = false;
-        PatternExe( accumulated_time, ref chanage_pattern_time, ref action);
-
-        //walk animation
-        anim.SetFloat("f_move_speed", rigid.velocity.magnitude);
-
-
-        Debug.Log("chanage_pattern_time " + chanage_pattern_time);
-        Debug.Log("accumulated_time " + accumulated_time);
-
-
-
-
     }
 
     private void OnTriggerStay(Collider other)
     {
-        if (!col_check.Add(other))
-            return;
-
-        if (other.gameObject.tag == "Player")
+        if (other.gameObject.tag == "Player" && !col_check.Add(other))
         {
-            action = true;
-            chase = true;
-
             target = other.transform;
         }
 
 
-        
     }
 
     private void OnTriggerExit(Collider other)
     {
-
         if (!col_check.Remove(other))
             return;
 
-        if (other.gameObject.tag == "Player")
+        if (other.gameObject.tag == "Player"  )
         {
-
-            Debug.Log("out");
-            chase = false;
-            action = false;
+            Debug.Log("exit");
+            target = null;
+            Debug.Log(target);
         }
-        
+
 
     }
-    
+
+
+    void Update()
+    {
+        State_Manager();
+
+        t_PatternExe();
+
+
+        //Debug.Log("chanage_pattern_time " + change_pattern_time);
+        //Debug.Log("accumulated_time " + accumulated_time);
+        //Debug.Log("State: " + cur_state);
+
+        accumulated_time += Time.deltaTime;
+
+
+
+    }
+
+
 
     Vector3 RandomDirect()
     {
         return new Vector3(Random.Range(-1.0f, 1.0f), 0.0f, Random.Range(-1.0f, 1.0f)).normalized;
     }
 
-    //Init change_pattern_time, move_dir(Random)
-    void InitValue(float Cur_Time, ref float Change_time)
+
+
+
+    void State_Manager()
     {
-        Change_time = Random.Range(change_random_time_min, change_random_time_max);
 
-        if (!chase)
-            move_dir = RandomDirect();
-
-        accumulated_time = 0.0f;
-    }
-
-    //
-    void ChangeActionPattern(float Cur_time, ref float Change_time, ref bool Action)
-    {
-        if (Cur_time <= Change_time || chase)
-            return;
-
-        InitValue(Cur_time, ref Change_time);
-
-        Action = !Action;
-    }
-
-    //set move_speed, rotation
-    void PatternExe(float Cur_time, ref float Change_time, ref bool Action)
-    {
-        //Pattern Change
-        ChangeActionPattern(Cur_time, ref Change_time, ref Action);
-
-        if (Action)
+        if (target == null)
         {
-
-            //Chase Move(target -> Player)
-            if (chase)       
+            if (cur_state != State.Idle && cur_state != State.Move)
             {
-                Vector3 target_dir = target.transform.position - transform.position;
-                move_dir = new Vector3(target_dir.x, 0.0f, target_dir.z).normalized;
+                cur_state = State.Idle;
 
-                anim.speed = 2.0f;
-
-                cur_speed = run_speed;
+                accumulated_time = 0.0f;
+                pattern_duration_time = Random.Range(pattern_duration_time_min, pattern_duration_time_max);
             }
-            else //Move
-                cur_speed = walk_speed;
+
+            if (accumulated_time >= pattern_duration_time)
+            {
+                if (cur_state == State.Idle)
+                    cur_state = State.Move;
+                else if (cur_state == State.Move)
+                    cur_state = State.Idle;
+                
+                accumulated_time = 0.0f;
+                pattern_duration_time = Random.Range(pattern_duration_time_min, pattern_duration_time_max);
+            }
+        }
+        else if (target.tag == "Player")
+        {
+            target_distance = (target.position - transform.position).magnitude;
+
+            if (target_distance >= attack_range)
+                cur_state = State.Chase;
+            else
+            {
+
+                cur_state = State.Attack;
+
+            }
 
 
-            //rotation
-            transform.rotation = Quaternion.LookRotation(move_dir);
+
         }
         else
-            cur_speed = 0.0f;
+        {
+            //TODO: target = wall
+        }
+
+
+
+    }
+    void t_PatternExe()
+    {
+        switch (cur_state)
+        {
+            case State.Idle:
+                cur_speed = 0.0f;
+                anim.SetFloat("f_cur_speed", cur_speed);
+
+                break;
+            case State.Move:
+
+                if (accumulated_time <= 0.0f)
+                {
+                    move_dir = RandomDirect();
+                    Debug.Log(move_dir);
+                }
+                cur_speed = walk_speed;
+
+                anim.SetFloat("f_cur_speed", cur_speed);
+                transform.rotation = Quaternion.LookRotation(move_dir);
+                break;
+
+            case State.Chase:
+
+                move_dir = (target.position - transform.position).normalized;
+                transform.rotation = Quaternion.LookRotation(move_dir);
+
+                anim.speed = 2.0f;
+                cur_speed = run_speed;
+                anim.SetFloat("f_cur_speed", cur_speed);
+
+                break;
+            case State.Attack:
+                cur_speed = 0.0f;
+                anim.SetFloat("f_cur_speed", cur_speed);
+
+                //attack after delay
+                if (accumulated_attack_cooldown >= attack_delay_time)
+                {
+                    anim.SetTrigger("t_attack");
+                    accumulated_attack_cooldown = 0.0f;
+                }
+                else
+                    accumulated_attack_cooldown += Time.deltaTime;
+
+                    break;
+            default:
+                break;
+        }
+    }
+
+
+    //============================================Animation Event Funtion======================================================
+    public void AnimAttackStart()
+    {
+        Debug.Log("Attack start");
+        test_obj.SetActive(true);
 
     }
 
+    public void AnimAttackDropHitBox()
+    {
+
+        test_obj.SetActive(false);
+
+    }
+
+    public void AnimAttackEnd()
+    {
+        Debug.Log("Attack end");
+
+    }
 
 }

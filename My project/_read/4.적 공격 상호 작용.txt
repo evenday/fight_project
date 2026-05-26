@@ -1,0 +1,57 @@
+Enemy는 Chase 상태일 때 Player와 일정 거리 이하가 될 경우 공격
+공격 모션이 끝나고 나서 다음 행동 실시
+
+========================================================
+1. 추적 중 일정 거리 안으로 들어오면 이동중지 후 공격을 실행하는 대상 앞에 히트 박스 생성
+
+=========================================================
+대기, 이동, 추적, 공격을 bool 값으로 관리 하기 복잡함 
+enum문으로 현재 행동을 설정후 switch문으로 각각의 행동을 실행
+
+수정
+1. 추적 대상이 있는지 없는지로 이동 패턴과 추적 패턴 구별
+
+
+2. 추적 대상 확인 범위 trigger에서 탐지 대상을 새분화 하기 위해 tag먼저 확인후 hashset에 넣는 형식으로
+수정
+
+3. 추적 중 attack_range 범위보다 거리가 짧으면 공격 애니메이션 실행 
+(이동 애니메이션을 속도 값으로 관리 하기 때문에 idle -> attack 애니메이션으로 넘어 감)
+===============================================================
+4. 공격 애니메이션이 끝 체크
+4-1. 애니메이션 시간 확인 후 그 시간(2:00) X
+4-2. animation Clip을 사용 
+{
+Enemy의 자식 mesh Object에 animator컴퍼넌트가 추가 되어 있기 때문에 
+mesh Object에 Enemy_anim_clip(Enemy에 있는 animator clip에 추가할 기능 함수들을 받아서 사용)
+컴퍼넌트를 추가 하고, 이 컴퍼넌트 aniamation clip를 사용 할 수 있게 함수 만듦(이 함수들의 원본은 Enemy컴퍼넌트에 있음)
+
+}
+
+공격애니메이션 클립에서 b_attack를 false로 교체 후 바로 true로 바뀜(animator가 attack -> idle로 교체 하기전에 값이 바뀌어서 idle로 애니메이션이 안넘어감)
+공격 끝난 후 다음 행동 로직 추가
+-> bool 값으로 제어 하면 stateManager()에서 추격 공격 로직에서 따로 bool값을 또 
+써야 할 수 도있어서
+animator에서 bool 대신 trigger로 관리
+(애니메이션이 한번(trigger가 적정) 실행 후 다시 공격 할지 이동(또는 추적) 해야할지 정해야 함)
+
+4-3.
+공격 애니메이션이 끝나고 바로 공격 애니메이션이 실행됨
+공격 후 텀을 주고 다음 공격을 실행 시키기
+
+float accumulated_attack_cooldown >= float attack_delay_time
+{
+ anim.setTrigger()
+ accumlated_attack_cooldown = 0.0f
+{
+else
+accumulated_attack_cooldown += time.dletaTime
+
+====================================================================
+5. 히트박스를 추가 할 경우 기존 reserchbox와 충돌 계산이 꼬일 수 있어서 충돌 처리는 각각의 reserchbox
+들이 처리하고 관리는 enemy에서 관리 하도록 변경 후 hitbox도 추가
+
+
+
+
+

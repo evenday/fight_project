@@ -23,7 +23,7 @@ public class Player : MonoBehaviour
     float input_v;
     float input_h;
 
-    [Header("rot Option")]
+    [Header("Lean Rot Option")]
     [SerializeField] Transform lean_pivot;
     [SerializeField] float max_lean = 15.0f;
     float cur_lean = 0.0f;
@@ -31,7 +31,13 @@ public class Player : MonoBehaviour
     float smooth_vel = 0.0f;
     float smooth_time = 0.1f;
 
-
+    //Battle Setting Values
+    public float hp 
+    {
+        get { return hp; }
+        set { hp = Mathf.Clamp(value, 0, 10.0f); }
+    }
+    
 
     private void Awake()
     {
@@ -42,7 +48,7 @@ public class Player : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        hp = 10.0f;
     }
 
     void FixedUpdate()
@@ -96,7 +102,7 @@ public class Player : MonoBehaviour
         //=======================================apply========================================================
 
         //Anim 
-        anim.SetFloat("f_move_speed", rigid.velocity.magnitude);
+        anim.SetFloat("f_cur_speed", rigid.velocity.magnitude);
 
         //Lean apply
         cur_lean = Mathf.SmoothDamp(cur_lean, target_lean, ref smooth_vel, smooth_time);

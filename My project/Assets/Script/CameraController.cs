@@ -7,16 +7,15 @@ public class CameraController : MonoBehaviour
 {
     [SerializeField] Vector3 offset = new Vector3(0, 0, 0);   //CameraManager 시작 위치(target.position + offset)
     [Header("Target")]
-    [SerializeField] Transform target;
+    [SerializeField] Transform follow_target;                 //target = Player
     [Header("Rotation Axis")]
     [SerializeField] Transform y_axis;                        //Y axis Object.transform
     [SerializeField] Transform x_axis;                        //X axis Object.transform
     [Header("Camera")]
     [SerializeField] Transform main_camera; 
-    public Transform camera_trans 
+    public Transform camera_trans                             //MainCamera get,set
     {
         get { return main_camera.transform; }
-        set { main_camera = value; }
     }
 
     [SerializeField] float distance = 12;
@@ -51,7 +50,7 @@ public class CameraController : MonoBehaviour
         x_axis.localRotation = Quaternion.Euler(pitch, 0, 0);       
 
         //This object position setting
-        transform.position = target.position + offset;
+        transform.position = follow_target.position + offset;
 
         //Collider LayerMask Setting
         layer_mask = LayerMask.GetMask("Floor", "Wall");
@@ -74,7 +73,7 @@ public class CameraController : MonoBehaviour
     void LateUpdate()
     {
         //Camera 
-        transform.position = target.position + offset;          //Update this.object position 
+        transform.position = follow_target.position + offset;          //Update this.object position 
         CameraLookTarget();                                     //Camera Look player
         CameraRotation();
 
