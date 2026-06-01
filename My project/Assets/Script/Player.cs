@@ -17,7 +17,7 @@ public class Player : MonoBehaviour
 
     [Header("Move Option")]
     [SerializeField] float walk_speed = 10.0f;
-    [SerializeField] float run_speed = 15.0f;
+    [SerializeField] float run_speed = 20.0f;
     Vector3 move_dir;
     float cur_speed = 0.0f;
     float input_v;
@@ -32,12 +32,14 @@ public class Player : MonoBehaviour
     float smooth_time = 0.1f;
 
     //Battle Setting Values
-    public float hp 
+    private float hp = 10.0f;
+
+    public float Hp
     {
         get { return hp; }
         set { hp = Mathf.Clamp(value, 0, 10.0f); }
     }
-    
+
 
     private void Awake()
     {
@@ -86,9 +88,26 @@ public class Player : MonoBehaviour
                 //Lean rotation
                 target_lean = GetMouseRotLeanValue(cam_data.mouse_x);
 
+
+                if(Input.GetKeyDown(KeyCode.Mouse0))
+                {
+                    cur_speed = 0.0f;
+
+                    anim.SetTrigger("t_hit");
+                }
+
+
+
             }
             else
                 target_lean = 0.0f;        //lean init
+        }
+        else if (Input.GetKeyDown(KeyCode.Mouse0))                              //hit
+        {
+            cur_speed = 0.0f;
+
+            anim.SetTrigger("t_hit");
+
         }
         else
         {
@@ -99,28 +118,39 @@ public class Player : MonoBehaviour
 
 
 
+
+
         //=======================================apply========================================================
 
         //Anim 
         anim.SetFloat("f_cur_speed", rigid.velocity.magnitude);
 
-        //Lean apply
         cur_lean = Mathf.SmoothDamp(cur_lean, target_lean, ref smooth_vel, smooth_time);
-        lean_pivot.localRotation = Quaternion.Euler(0, 0, cur_lean);
+
 
         //Charactor move rotation 
         if (move_dir != Vector3.zero && (Input.GetButton("Vertical") || Input.GetButton("Horizontal")))
             transform.rotation = Quaternion.LookRotation(move_dir);
 
+        
+        //====================================================================================================
+  
+
     }
 
+    private void LateUpdate()
+    {
+        //Lean apply
+        lean_pivot.localRotation = lean_pivot.localRotation * Quaternion.Euler(0, 0, cur_lean);
 
+
+    }
 
     //By Camera forward
     Vector3 InputMoveDirect()
     {
-        Vector3 forward_axis = cam_data.camera_trans.forward;
-        Vector3 right_axis = cam_data.camera_trans.right;
+        Vector3 forward_axis = cam_data.Camera_Trans.forward;
+        Vector3 right_axis = cam_data.Camera_Trans.right;
 
         forward_axis.y = 0;
         right_axis.y = 0;

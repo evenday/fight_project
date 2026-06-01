@@ -13,8 +13,6 @@ public class Enemy : MonoBehaviour
         Attack
     };
 
-    //Test
-    [SerializeField] GameObject test_obj;
 
     Rigidbody rigid;
     Animator anim;
@@ -33,23 +31,23 @@ public class Enemy : MonoBehaviour
     [SerializeField] float walk_speed = 9.0f;
 
     //Chase
-    HashSet<Collider> col_check = new HashSet<Collider>();      //search_objects layer check
     [SerializeField] float run_speed = 13.0f;
 
     //Battle
-    [SerializeField] float attack_range = 5.0f;
-    [SerializeField] float attack_delay_time = 2.0f;
-    Transform target;                                           //Collider->Trigger Set gameobject.transform(tag == Player)
-    float accumulated_attack_cooldown = 0.0f;                   //wait after attack
-    float target_distance = 0.0f;                               //(target.position - transform.position).magnitude
-
-
+    [SerializeField] float hit_range = 5.0f;
+    [SerializeField] float hit_delay_time = 2.0f;
+    Player target = null;                                    //Collider->Trigger Set gameobject.transform(tag == Player)
+    Vector3 target_distance = Vector3.zero;                               //(target.position - transform.position).magnitude
+    float accumulated_hit_cooldown = 0.0f;                      //wait after attack
+    public bool b_hit { get; private set; } = false;
+    HitBox hit_box;
+    
 
     private void Awake()
     {
         rigid = GetComponent<Rigidbody>();
         anim = GetComponentInChildren<Animator>();
-
+        hit_box = GetComponentInChildren<HitBox>();
 
     }
 
@@ -57,10 +55,7 @@ public class Enemy : MonoBehaviour
     {
         move_dir = RandomDirect();
         pattern_duration_time = Random.Range(pattern_duration_time_min, pattern_duration_time_max);
-        accumulated_attack_cooldown = attack_delay_time;
-        
-        
-        test_obj.SetActive(false);
+        accumulated_hit_cooldown = hit_delay_time;
 
     }
 
@@ -72,30 +67,7 @@ public class Enemy : MonoBehaviour
             move_dir.z * cur_speed);
     }
 
-    private void OnTriggerStay(Collider other)
-    {
-        if (other.gameObject.tag == "Player" && !col_check.Add(other))
-        {
-            target = other.transform;
-        }
 
-
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        if (!col_check.Remove(other))
-            return;
-
-        if (other.gameObject.tag == "Player"  )
-        {
-            Debug.Log("exit");
-            target = null;
-            Debug.Log(target);
-        }
-
-
-    }
 
 
     void Update()
@@ -105,13 +77,14 @@ public class Enemy : MonoBehaviour
         t_PatternExe();
 
 
+
         //Debug.Log("chanage_pattern_time " + change_pattern_time);
         //Debug.Log("accumulated_time " + accumulated_time);
         //Debug.Log("State: " + cur_state);
 
         accumulated_time += Time.deltaTime;
 
-
+        
 
     }
 
@@ -151,13 +124,15 @@ public class Enemy : MonoBehaviour
         }
         else if (target.tag == "Player")
         {
-            target_distance = (target.position - transform.position).magnitude;
+            target_distance = target.transform.position - transform.position;
 
-            if (target_distance >= attack_range)
+            if (target_distance.magnitude >= hit_range)
+            {
                 cur_state = State.Chase;
+                accumulated_hit_cooldown = hit_delay_time;
+            }
             else
             {
-
                 cur_state = State.Attack;
 
             }
@@ -179,7 +154,7 @@ public class Enemy : MonoBehaviour
         {
             case State.Idle:
                 cur_speed = 0.0f;
-                anim.SetFloat("f_cur_speed", cur_speed);
+                //anim.SetFloat("f_cur_speed", cur_speed);
 
                 break;
             case State.Move:
@@ -191,53 +166,85 @@ public class Enemy : MonoBehaviour
                 }
                 cur_speed = walk_speed;
 
-                anim.SetFloat("f_cur_speed", cur_speed);
+                //anim.SetFloat("f_cur_speed", cur_speed);
                 transform.rotation = Quaternion.LookRotation(move_dir);
                 break;
 
             case State.Chase:
 
-                move_dir = (target.position - transform.position).normalized;
+                move_dir = target_distance.normalized;
                 transform.rotation = Quaternion.LookRotation(move_dir);
 
                 anim.speed = 2.0f;
                 cur_speed = run_speed;
-                anim.SetFloat("f_cur_speed", cur_speed);
+                //anim.SetFloat("f_cur_speed", cur_speed);
 
                 break;
             case State.Attack:
                 cur_speed = 0.0f;
-                anim.SetFloat("f_cur_speed", cur_speed);
+                //anim.SetFloat("f_cur_speed", cur_speed);
 
                 //attack after delay
-                if (accumulated_attack_cooldown >= attack_delay_time)
+                if (accumulated_hit_cooldown >= hit_delay_time)
                 {
-                    anim.SetTrigger("t_attack");
-                    accumulated_attack_cooldown = 0.0f;
+                    anim.SetTrigger("t_hit");
+                    accumulated_hit_cooldown = 0.0f;
                 }
                 else
-                    accumulated_attack_cooldown += Time.deltaTime;
+                    accumulated_hit_cooldown += Time.deltaTime;
 
-                    break;
+                break;
             default:
                 break;
         }
+
+        anim.SetFloat("f_cur_speed", cur_speed);
+
     }
+
+    //==========================================Reserch Box Manger Function====================================================
+
+    public void SetReserchTarget(GameObject obj, Collider col_target)
+    {
+        if (target != null)
+            return;
+
+        target = col_target.GetComponent<Player>() ;
+    }
+
+    public void RemoveReserchTarget()
+    {
+        if (target == null)
+            return;
+
+        target = null;
+    }
+
+
+    //================================================Hit Box Function=========================================================
+
+
+    public void HitDamage()
+    {
+        target.Hp -= 1;
+    }
+
+
 
 
     //============================================Animation Event Funtion======================================================
     public void AnimAttackStart()
     {
         Debug.Log("Attack start");
-        test_obj.SetActive(true);
+        hit_box.gameObject.SetActive(true);
 
     }
 
     public void AnimAttackDropHitBox()
     {
 
-        test_obj.SetActive(false);
-
+        hit_box.gameObject.SetActive(false);
+            
     }
 
     public void AnimAttackEnd()
@@ -245,5 +252,6 @@ public class Enemy : MonoBehaviour
         Debug.Log("Attack end");
 
     }
+
 
 }

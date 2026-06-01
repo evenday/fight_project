@@ -363,7 +363,9 @@
 "Assets/Script/CameraController.cs"
 "Assets/Script/Enemy.cs"
 "Assets/Script/Enemy_Anim_Clip.cs"
+"Assets/Script/HitBox.cs"
 "Assets/Script/Player.cs"
+"Assets/Script/ReserchBox.cs"
 -langversion:9.0
 /deterministic
 /optimize+

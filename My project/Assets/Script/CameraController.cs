@@ -13,9 +13,10 @@ public class CameraController : MonoBehaviour
     [SerializeField] Transform x_axis;                        //X axis Object.transform
     [Header("Camera")]
     [SerializeField] Transform main_camera; 
-    public Transform camera_trans                             //MainCamera get,set
+    public Transform Camera_Trans                             //MainCamera get,set
     {
         get { return main_camera.transform; }
+        private set { main_camera = value; }
     }
 
     [SerializeField] float distance = 12;

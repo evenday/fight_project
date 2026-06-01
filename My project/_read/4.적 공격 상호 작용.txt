@@ -51,7 +51,15 @@ accumulated_attack_cooldown += time.dletaTime
 5. 히트박스를 추가 할 경우 기존 reserchbox와 충돌 계산이 꼬일 수 있어서 충돌 처리는 각각의 reserchbox
 들이 처리하고 관리는 enemy에서 관리 하도록 변경 후 hitbox도 추가
 
+hashSet사용 X 대상은 Player하나밖에 없기 때문에 굳이 hashset말고 
+충돌 처리 되었을 때 target이 있으면 충돌 처리 하지 않는 형식
 
+Enemy오브젝트 자식으로 Hit_box추가 후 Hit_Box에서는 Enemy 컴퍼넌트에 있는 함수만 사용
+-> 충돌 처리는 후 데미지Hit_Box에서 
+
+tobo:HitBox.cs 구현
+
+====================================================================
 
 
 
