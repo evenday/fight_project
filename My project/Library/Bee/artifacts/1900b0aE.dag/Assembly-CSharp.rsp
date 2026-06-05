@@ -365,7 +365,7 @@
 "Assets/Script/Enemy_Anim_Clip.cs"
 "Assets/Script/HitBox.cs"
 "Assets/Script/Player.cs"
-"Assets/Script/ReserchBox.cs"
+"Assets/Script/ResearchBox.cs"
 -langversion:9.0
 /deterministic
 /optimize+

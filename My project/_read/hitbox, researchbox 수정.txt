@@ -1,0 +1,30 @@
+==================================================================
+수정 
+
+researchbox, hitbox관련 기능을 범용성을 늘리기 각각의 기능들을 스크립트에 넣고 상위 스크립트에서
+필요한 값들을 주는것으로 변경
+
+researchbox
+->researchbox에서는 T로 반환하는 함수로 충돌 처리된 오브젝트에서 필요한 컴퍼넌트의 정보를 
+반환 하는 함수 추가
+
+1. enemy에서 GetComponentsinChilren으로 하위 ResearchBox들의 정보를 다 가져옴
+->ResearchBox.GetTargetComponent<T>()
+
+2. ResearchBox.cs에 check_colliding(bool)추가 후 충돌 되고 있는 것들중 먼저 들어오는 값을 사용
+-> foreach()
+ResearchBox.Colliding = true 
+target = ResearchBox.GetTargetComponent<T>()
+!
+null
+
+
+===================================================================
+HitBox
+Hitbox.cs 에서는 충돌 처리만 데미지 계산은 상위 cs에서처리 
+
+
+
+
+
+

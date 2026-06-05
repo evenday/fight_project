@@ -4,29 +4,18 @@ using UnityEngine;
 
 public class HitBox : MonoBehaviour
 {
-    Enemy enemy;
+    public string Target_tag = "";
+    public float Damage = 0.0f;
 
-    private void Awake()
-    {
-        enemy = GetComponentInParent<Enemy>();
-    }
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 
     private void OnTriggerEnter(Collider other)
     {
-        if(other.CompareTag("Player"))
-            enemy.HitDamage();
+        if (!other.CompareTag(Target_tag))
+            return;
+
+        
+
+           
     }
 
 

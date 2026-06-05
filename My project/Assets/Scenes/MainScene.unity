@@ -547,6 +547,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf2b1b1a885247b418d5b08a329c1b00, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Target_tag: 
 --- !u!1 &414315163
 GameObject:
   m_ObjectHideFlags: 0
@@ -817,6 +818,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf2b1b1a885247b418d5b08a329c1b00, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Target_tag: 
 --- !u!1 &836810542
 GameObject:
   m_ObjectHideFlags: 0
@@ -827,7 +829,7 @@ GameObject:
   m_Component:
   - component: {fileID: 836810543}
   m_Layer: 0
-  m_Name: Reserch_Box
+  m_Name: Research_Box
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1011,6 +1013,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf2b1b1a885247b418d5b08a329c1b00, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Target_tag: 
 --- !u!1 &1300789805
 GameObject:
   m_ObjectHideFlags: 0
@@ -1271,6 +1274,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 895cc4ea4faacb444b3b021d50069e36, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Target_tag: 
+  Damage: 0
 --- !u!1 &1846865555
 GameObject:
   m_ObjectHideFlags: 0

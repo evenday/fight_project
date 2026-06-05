@@ -29,18 +29,18 @@ public class Enemy : MonoBehaviour
     //Move pattern
     Vector3 move_dir;                                   //if not chase state move direction
     [SerializeField] float walk_speed = 9.0f;
-
-    //Chase
     [SerializeField] float run_speed = 13.0f;
 
+
     //Battle
+    //Research
+    ResearchBox[] research_boxs;
+    HitBox hit_box;
+    Player target = null;                                       //Collider->Trigger Set gameobject.transform(tag == Player)
     [SerializeField] float hit_range = 5.0f;
     [SerializeField] float hit_delay_time = 2.0f;
-    Player target = null;                                    //Collider->Trigger Set gameobject.transform(tag == Player)
-    Vector3 target_distance = Vector3.zero;                               //(target.position - transform.position).magnitude
+    Vector3 target_distance = Vector3.zero;                     //(target.position - transform.position).magnitude
     float accumulated_hit_cooldown = 0.0f;                      //wait after attack
-    public bool b_hit { get; private set; } = false;
-    HitBox hit_box;
     
 
     private void Awake()
@@ -48,7 +48,7 @@ public class Enemy : MonoBehaviour
         rigid = GetComponent<Rigidbody>();
         anim = GetComponentInChildren<Animator>();
         hit_box = GetComponentInChildren<HitBox>();
-
+        research_boxs = GetComponentsInChildren<ResearchBox>();
     }
 
     void Start()
@@ -56,6 +56,11 @@ public class Enemy : MonoBehaviour
         move_dir = RandomDirect();
         pattern_duration_time = Random.Range(pattern_duration_time_min, pattern_duration_time_max);
         accumulated_hit_cooldown = hit_delay_time;
+
+        //Research Boxs set tag name
+        foreach (ResearchBox rb in research_boxs)
+            rb.Target_tag = "Player";
+
 
     }
 
@@ -100,6 +105,7 @@ public class Enemy : MonoBehaviour
 
     void State_Manager()
     {
+        target = SetResearchBoxTarget<Player>();
 
         if (target == null)
         {
@@ -122,7 +128,7 @@ public class Enemy : MonoBehaviour
                 pattern_duration_time = Random.Range(pattern_duration_time_min, pattern_duration_time_max);
             }
         }
-        else if (target.tag == "Player")
+        else if (target.CompareTag("Player"))
         {
             target_distance = target.transform.position - transform.position;
 
@@ -136,7 +142,6 @@ public class Enemy : MonoBehaviour
                 cur_state = State.Attack;
 
             }
-
 
 
         }
@@ -154,7 +159,6 @@ public class Enemy : MonoBehaviour
         {
             case State.Idle:
                 cur_speed = 0.0f;
-                //anim.SetFloat("f_cur_speed", cur_speed);
 
                 break;
             case State.Move:
@@ -166,7 +170,6 @@ public class Enemy : MonoBehaviour
                 }
                 cur_speed = walk_speed;
 
-                //anim.SetFloat("f_cur_speed", cur_speed);
                 transform.rotation = Quaternion.LookRotation(move_dir);
                 break;
 
@@ -177,12 +180,11 @@ public class Enemy : MonoBehaviour
 
                 anim.speed = 2.0f;
                 cur_speed = run_speed;
-                //anim.SetFloat("f_cur_speed", cur_speed);
+
 
                 break;
             case State.Attack:
                 cur_speed = 0.0f;
-                //anim.SetFloat("f_cur_speed", cur_speed);
 
                 //attack after delay
                 if (accumulated_hit_cooldown >= hit_delay_time)
@@ -204,33 +206,18 @@ public class Enemy : MonoBehaviour
 
     //==========================================Reserch Box Manger Function====================================================
 
-    public void SetReserchTarget(GameObject obj, Collider col_target)
+    T SetResearchBoxTarget<T>() where T : Component
     {
-        if (target != null)
-            return;
+        foreach (ResearchBox rb in research_boxs)
+        {
+            if (rb.Colliding)
+            {
+                return rb.GetTargetComponent<T>();
+            }
+        }
 
-        target = col_target.GetComponent<Player>() ;
+        return null;
     }
-
-    public void RemoveReserchTarget()
-    {
-        if (target == null)
-            return;
-
-        target = null;
-    }
-
-
-    //================================================Hit Box Function=========================================================
-
-
-    public void HitDamage()
-    {
-        target.Hp -= 1;
-    }
-
-
-
 
     //============================================Animation Event Funtion======================================================
     public void AnimAttackStart()
