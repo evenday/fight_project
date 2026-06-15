@@ -18,7 +18,22 @@ target = ResearchBox.GetTargetComponent<T>()
 !
 null
 
+추가 
+Target_tag_name 삭제
+GetComponent<T>()  삭제 
+ResearchBox.Target(Collider) 사용
+enemy.target(Player) ----------------> enemy.target(Collider) 수정 
+Enemy.StateManager()에서 ResearchBox에서 받아온 target값을 TryGetComponent<>로 사용
+
+
 
 ===================================================================
 HitBox
+
+ITakeDamage추가 Player에 ITakeDamage.TakeDamage(float damage) 구현 damage는 상위 cs에서 관리
+
+todo Player 공격 구현
+
+
+
 

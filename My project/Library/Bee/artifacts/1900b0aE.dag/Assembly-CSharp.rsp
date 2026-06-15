@@ -363,6 +363,7 @@
 "Assets/Script/CameraController.cs"
 "Assets/Script/Enemy.cs"
 "Assets/Script/Enemy_Anim_Clip.cs"
+"Assets/Script/FunctionInterfaces.cs"
 "Assets/Script/HitBox.cs"
 "Assets/Script/Player.cs"
 "Assets/Script/ResearchBox.cs"

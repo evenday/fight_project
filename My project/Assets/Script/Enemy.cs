@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class Enemy : MonoBehaviour
+public class Enemy : MonoBehaviour, ITakeDamage
 {
     enum State
     {
@@ -18,7 +18,7 @@ public class Enemy : MonoBehaviour
     Animator anim;
 
     //Control action values
-    [SerializeField] State cur_state;
+    [SerializeField] State cur_state; 
     [SerializeField] float pattern_duration_time_max = 5.0f;    //Random time Max
     [SerializeField] float pattern_duration_time_min = 1.0f;    //Rnadom time min
     float accumulated_time = 0.0f;                              //Current time
@@ -33,15 +33,17 @@ public class Enemy : MonoBehaviour
 
 
     //Battle
+    HitBox hit_box;
+    [SerializeField] float hit_delay_time = 2.0f;
+    [SerializeField] float damage = 1.0f;
+    float hp = 10.0f; 
+    float accumulated_hit_cooldown = 0.0f;                      //wait after attack
+
     //Research
     ResearchBox[] research_boxs;
-    HitBox hit_box;
-    Player target = null;                                       //Collider->Trigger Set gameobject.transform(tag == Player)
+    Collider target = null;                                       //Collider->Trigger Set gameobject.transform(tag == Player)
     [SerializeField] float hit_range = 5.0f;
-    [SerializeField] float hit_delay_time = 2.0f;
     Vector3 target_distance = Vector3.zero;                     //(target.position - transform.position).magnitude
-    float accumulated_hit_cooldown = 0.0f;                      //wait after attack
-    
 
     private void Awake()
     {
@@ -56,12 +58,7 @@ public class Enemy : MonoBehaviour
         move_dir = RandomDirect();
         pattern_duration_time = Random.Range(pattern_duration_time_min, pattern_duration_time_max);
         accumulated_hit_cooldown = hit_delay_time;
-
-        //Research Boxs set tag name
-        foreach (ResearchBox rb in research_boxs)
-            rb.Target_tag = "Player";
-
-
+        hit_box.Damage = damage;
     }
 
     private void FixedUpdate()
@@ -77,9 +74,9 @@ public class Enemy : MonoBehaviour
 
     void Update()
     {
-        State_Manager();
+        StateManager();
 
-        t_PatternExe();
+        PatternExe();
 
 
 
@@ -103,9 +100,11 @@ public class Enemy : MonoBehaviour
 
 
 
-    void State_Manager()
+    void StateManager()
     {
-        target = SetResearchBoxTarget<Player>();
+        Player player = null;
+
+        target = SetResearchBoxTarget();
 
         if (target == null)
         {
@@ -128,7 +127,7 @@ public class Enemy : MonoBehaviour
                 pattern_duration_time = Random.Range(pattern_duration_time_min, pattern_duration_time_max);
             }
         }
-        else if (target.CompareTag("Player"))
+        else if (target.TryGetComponent<Player>(out player))
         {
             target_distance = target.transform.position - transform.position;
 
@@ -153,7 +152,7 @@ public class Enemy : MonoBehaviour
 
 
     }
-    void t_PatternExe()
+    void PatternExe()
     {
         switch (cur_state)
         {
@@ -206,17 +205,23 @@ public class Enemy : MonoBehaviour
 
     //==========================================Reserch Box Manger Function====================================================
 
-    T SetResearchBoxTarget<T>() where T : Component
+    Collider SetResearchBoxTarget() 
     {
         foreach (ResearchBox rb in research_boxs)
         {
             if (rb.Colliding)
             {
-                return rb.GetTargetComponent<T>();
+                return rb.Target;
             }
         }
 
         return null;
+    }
+
+    //================================================Damage Interface===========================================================
+    public void TakeDamage(float damamge)
+    {
+        hp -= damage;
     }
 
     //============================================Animation Event Funtion======================================================

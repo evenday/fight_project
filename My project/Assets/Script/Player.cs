@@ -4,7 +4,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Animations;
 
-public class Player : MonoBehaviour
+public class Player : MonoBehaviour, ITakeDamage
 {
     Rigidbody rigid;
     Animator anim;
@@ -175,4 +175,9 @@ public class Player : MonoBehaviour
             return  0.0f;
     }
 
+    public void TakeDamage(float damange)
+    {
+        hp -= damange;
+        Debug.Log(hp);
+    }
 }

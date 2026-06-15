@@ -4,16 +4,19 @@ using UnityEngine;
 
 public class HitBox : MonoBehaviour
 {
-    public string Target_tag = "";
-    public float Damage = 0.0f;
+    float damage = 1.0f;
+    public float Damage { get { return damage; } set { damage = value; } }
 
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.CompareTag(Target_tag))
-            return;
+        ITakeDamage target = other.GetComponent<ITakeDamage>();
 
-        
+        if(target != null)
+        {
+            Debug.Log(target.GetType());
+            target.TakeDamage(damage);
+        }
 
            
     }
