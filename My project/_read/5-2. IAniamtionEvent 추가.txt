@@ -1,0 +1,5 @@
+Enemy_Anim_Clip  -> AnimEvent 수정 
+범용성을 위해 
+IAnimationEvent 추가
+
+AnimEvent에 GetcomponentInParent<IAnimationEvent>()로 함수 가져오기

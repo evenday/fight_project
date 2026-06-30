@@ -1,0 +1,30 @@
+마우스 휠 누룰 시 범위 내의 적의 방향으로 카메라를 바라보게 고정
+
+타겟팅 상태인지 확인하는 bool값 추가
+이값이 true 일경우 적탐색후 가까운 적을 공격하는 기능 off
+false일경우 적탐색 on
+bool b_targeting
+
+CamemraManager.cs에 
+CameraLookTarget()에 Camera_dir을 타겟팅 됨 상대 위치로 바꿈
+
+** main_camera를 타겟 대상을 보게 끔해서 만약 
+타겟 - 카메라 - 플레이어
+식으로 위치가 배치되면 플레이어가 화면 밖으로 나가짐
+
+-> 메인 카메라를 회전 시키는것이 아닌 
+카메라 관리 축들
+pitch, yaw를 타겟위치를 보게 끔 수정 (메인 카메라 회전 X)
+
+AI가 공식 잘못 사용함 pitch 구하는공식
+
+-Mathf.Asin(dir.y / new Vector2(dir.x, dir.z).magnitude) * Mathf.Rad2Deg;으로 잘못 알려줌
+
+
+
+todo: 화면중심 분에 가까운 대상을 타겟으로 휠누루고 움직이면 타겟 변경
+수정 카메라 인스펙터나 CameraManager.cs에서 프로퍼티로 가져오는 것들 Camera.Main으로 수정
+
+CameraController mouse_rot 추가(마우스 좌우 회전 확인 값)
+
+

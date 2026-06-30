@@ -3,15 +3,9 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class Enemy : MonoBehaviour, ITakeDamage
+public class Enemy : MonoBehaviour, ITakeDamage, IAnimationEvent, ITargetAble
 {
-    enum State
-    {
-        Idle,
-        Move,
-        Chase,
-        Attack
-    };
+
 
 
     Rigidbody rigid;
@@ -24,7 +18,7 @@ public class Enemy : MonoBehaviour, ITakeDamage
     float accumulated_time = 0.0f;                              //Current time
     float pattern_duration_time = 0.0f;                         //pattern duration time (compare accumlated_time)
     float cur_speed = 0.0f;
-
+    bool anim_running = false;
 
     //Move pattern
     Vector3 move_dir;                                   //if not chase state move direction
@@ -34,15 +28,15 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
     //Battle
     HitBox hit_box;
-    [SerializeField] float hit_delay_time = 2.0f;
-    [SerializeField] float damage = 1.0f;
+    [SerializeField] float attack_cooldown = 2.0f;
+    [SerializeField] float attack_damage = 1.0f;
     float hp = 10.0f; 
-    float accumulated_hit_cooldown = 0.0f;                      //wait after attack
+    float attack_wait_time = 0.0f;                      //wait after attack
 
     //Research
-    ResearchBox[] research_boxs;
-    Collider target = null;                                       //Collider->Trigger Set gameobject.transform(tag == Player)
-    [SerializeField] float hit_range = 5.0f;
+    DetectBox[] detect_boxs;
+    Transform target = null;                                       //Collider->Trigger Set gameobject.transform(tag == Player)
+    [SerializeField] float attack_range = 5.0f;
     Vector3 target_distance = Vector3.zero;                     //(target.position - transform.position).magnitude
 
     private void Awake()
@@ -50,15 +44,16 @@ public class Enemy : MonoBehaviour, ITakeDamage
         rigid = GetComponent<Rigidbody>();
         anim = GetComponentInChildren<Animator>();
         hit_box = GetComponentInChildren<HitBox>();
-        research_boxs = GetComponentsInChildren<ResearchBox>();
+        detect_boxs = GetComponentsInChildren<DetectBox>();
     }
 
     void Start()
     {
         move_dir = RandomDirect();
         pattern_duration_time = Random.Range(pattern_duration_time_min, pattern_duration_time_max);
-        accumulated_hit_cooldown = hit_delay_time;
-        hit_box.Damage = damage;
+        attack_wait_time = attack_cooldown;
+        hit_box.Damage = attack_damage;
+        hit_box.gameObject.SetActive(false);
     }
 
     private void FixedUpdate()
@@ -74,20 +69,18 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
     void Update()
     {
+        if (attack_wait_time < attack_cooldown)
+        {
+            attack_wait_time += Time.deltaTime;
+            Debug.Log(attack_wait_time);
+        }
+
+            
         StateManager();
-
-        PatternExe();
-
-
-
-        //Debug.Log("chanage_pattern_time " + change_pattern_time);
-        //Debug.Log("accumulated_time " + accumulated_time);
-        //Debug.Log("State: " + cur_state);
-
+        //StateAction();
         accumulated_time += Time.deltaTime;
 
-        
-
+       
     }
 
 
@@ -102,7 +95,8 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
     void StateManager()
     {
-        Player player = null;
+        if (anim_running)
+            return;
 
         target = SetResearchBoxTarget();
 
@@ -122,27 +116,34 @@ public class Enemy : MonoBehaviour, ITakeDamage
                     cur_state = State.Move;
                 else if (cur_state == State.Move)
                     cur_state = State.Idle;
-                
+
                 accumulated_time = 0.0f;
                 pattern_duration_time = Random.Range(pattern_duration_time_min, pattern_duration_time_max);
             }
-        }
-        else if (target.TryGetComponent<Player>(out player))
-        {
-            target_distance = target.transform.position - transform.position;
 
-            if (target_distance.magnitude >= hit_range)
+            Debug.Log(target);
+        }
+        else if (target != null)
+        {
+            target_distance = target.position - transform.position;
+
+            if (target_distance.magnitude >= attack_range)
             {
                 cur_state = State.Chase;
-                accumulated_hit_cooldown = hit_delay_time;
             }
-            else
+            else if(target_distance.magnitude <= attack_range && attack_wait_time >= attack_cooldown)
             {
+                anim.SetTrigger("t_hit");
                 cur_state = State.Attack;
 
             }
+            else
+            {
+                cur_state = State.Idle;
+            }
 
 
+            Debug.Log(target.gameObject.name);
         }
         else
         {
@@ -150,9 +151,8 @@ public class Enemy : MonoBehaviour, ITakeDamage
         }
 
 
-
     }
-    void PatternExe()
+    void StateAction()
     {
         switch (cur_state)
         {
@@ -185,14 +185,9 @@ public class Enemy : MonoBehaviour, ITakeDamage
             case State.Attack:
                 cur_speed = 0.0f;
 
-                //attack after delay
-                if (accumulated_hit_cooldown >= hit_delay_time)
-                {
-                    anim.SetTrigger("t_hit");
-                    accumulated_hit_cooldown = 0.0f;
-                }
-                else
-                    accumulated_hit_cooldown += Time.deltaTime;
+                anim_running = true;
+                attack_wait_time = 0.0f;
+
 
                 break;
             default:
@@ -205,45 +200,63 @@ public class Enemy : MonoBehaviour, ITakeDamage
 
     //==========================================Reserch Box Manger Function====================================================
 
-    Collider SetResearchBoxTarget() 
+    Transform SetResearchBoxTarget() 
     {
-        foreach (ResearchBox rb in research_boxs)
+        foreach (DetectBox db in detect_boxs)
         {
-            if (rb.Colliding)
-            {
-                return rb.Target;
-            }
+            //todo 여기서 Target값이 안잡힘 ResearchBox쪽 확인
+            if (db.Targets.Count == 0)
+                continue;
+
+            return db.Targets[0].Transform();
+
         }
 
         return null;
     }
 
     //================================================Damage Interface===========================================================
-    public void TakeDamage(float damamge)
+    public void TakeDamage(float damage)
     {
         hp -= damage;
+        //Debug.Log(hp);
     }
 
     //============================================Animation Event Funtion======================================================
-    public void AnimAttackStart()
+
+    public void StartAnimation()
     {
         Debug.Log("Attack start");
+
+    }
+
+    public void StartEvent()
+    {
         hit_box.gameObject.SetActive(true);
 
     }
 
-    public void AnimAttackDropHitBox()
-    {
 
+    public void EndEvent()
+    {
         hit_box.gameObject.SetActive(false);
-            
+
     }
 
-    public void AnimAttackEnd()
+    public void EndAnimation()
     {
-        Debug.Log("Attack end");
-
+        anim_running = false;
     }
 
+    //==============================================ITargetAble===================================================
+    public Transform Transform()
+    {
+        return transform;
+    }
+
+    public string ObjectName()
+    {
+        return gameObject.name;
+    }
 
 }

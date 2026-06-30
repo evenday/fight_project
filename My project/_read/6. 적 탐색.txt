@@ -1,0 +1,23 @@
+범위 안에 여러적이 있을경우 제일 거리가 제일 가까운 적을 공격
+
+ResearchBox에 
+Target(Collider)를 Target(List<collider>)로 수정
+
+ITargetAble추가 메서드에서 transform정보를 주는 함수
+Targets(List<ITargetAble>)로 수정
+
+ReseachBox들 이름 DetectionBox로 이름 변경(의미 강조)
+
+enemy에서 타겟이 detectbox에 들어온 정보를 받는게 아닌 정보 안에 transform를 받기 때문에 문제 발생
+
+플레이어의 DetectBox안에 들어온 것중 거리가 가장 가까운 대상을 공격
+
+Player.cs, Enemey.cs
+ActionController() -> StateManager() 수정
+StateManager() -> StateAction() 수정
+
+
+
+
+
+

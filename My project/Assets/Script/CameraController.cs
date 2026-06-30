@@ -7,18 +7,12 @@ public class CameraController : MonoBehaviour
 {
     [SerializeField] Vector3 offset = new Vector3(0, 0, 0);   //CameraManager 시작 위치(target.position + offset)
     [Header("Target")]
-    [SerializeField] Transform follow_target;                 //target = Player
+    [SerializeField] Player follow_target;                 //target = Player
     [Header("Rotation Axis")]
-    [SerializeField] Transform y_axis;                        //Y axis Object.transform
-    [SerializeField] Transform x_axis;                        //X axis Object.transform
+    [SerializeField] Transform y_axis;                        //Y axis Object.transform -> yaw
+    [SerializeField] Transform x_axis;                        //X axis Object.transform -> pitch
     [Header("Camera")]
-    [SerializeField] Transform main_camera; 
-    public Transform Camera_Trans                             //MainCamera get,set
-    {
-        get { return main_camera.transform; }
-        private set { main_camera = value; }
-    }
-
+    Camera main_cam; 
     [SerializeField] float distance = 12;
     //public float camera_velocity = 0.0f;
     [SerializeField] float rot_sensitiv = 1.0f;
@@ -42,16 +36,18 @@ public class CameraController : MonoBehaviour
 
     void Awake()
     {
+        main_cam = Camera.main;
+
         //format Setting
         zoom_pos = distance;                                                                        
-        main_camera.localPosition = new Vector3(0, 0, -distance);   //Camera distance
+        main_cam.transform.localPosition = new Vector3(0, 0, -distance);   //Camera distance
 
         //X axis rotation
         pitch += 20.0f;                                             
         x_axis.localRotation = Quaternion.Euler(pitch, 0, 0);       
 
         //This object position setting
-        transform.position = follow_target.position + offset;
+        transform.position = follow_target.transform.position + offset;
 
         //Collider LayerMask Setting
         layer_mask = LayerMask.GetMask("Floor", "Wall");
@@ -59,6 +55,7 @@ public class CameraController : MonoBehaviour
        
 
     }
+
 
     private void Update()
     {
@@ -74,11 +71,11 @@ public class CameraController : MonoBehaviour
     void LateUpdate()
     {
         //Camera 
-        transform.position = follow_target.position + offset;          //Update this.object position 
-        CameraLookTarget();                                     //Camera Look player
-        CameraRotation();
+        transform.position = follow_target.transform.position + offset;     //Update this.object position 
+        CameraLookTarget();                                                 //Camera Look player
+        TargetAroundRotation();
 
-        CameraZoom();                                           //Camera Zoom
+        CameraZoom();                                                       //Camera Zoom
 
     }
 
@@ -86,9 +83,11 @@ public class CameraController : MonoBehaviour
     void CameraLookTarget()
     {
         //Camera look target 
-        Vector3 camera_dir = transform.position - main_camera.position; //dir camera -> camera_manager
-     
-        main_camera.rotation = Quaternion.LookRotation(camera_dir);
+        Vector3 camera_dir; //dir camera -> camera_manager
+
+        camera_dir = transform.position - main_cam.transform.position;
+
+        main_cam.transform.rotation = Quaternion.LookRotation(camera_dir);
         
     }
 
@@ -100,7 +99,7 @@ public class CameraController : MonoBehaviour
 
     bool CameraCheckColRay(ref float target_pos)
     {
-        Vector3 ray_dir = main_camera.position - transform.position;
+        Vector3 ray_dir = main_cam.transform.position - transform.position;
 
         //Look Ray
         if(Input.GetKey(KeyCode.Tab))
@@ -119,13 +118,13 @@ public class CameraController : MonoBehaviour
     {
         distance = Mathf.SmoothDamp(distance, target_dis, ref current_velocity, move_time);
         distance = Mathf.Clamp(distance, 2, 15);
-        main_camera.localPosition = new Vector3(0, 0, -distance);
+        main_cam.transform.localPosition = new Vector3(0, 0, -distance);
     }
 
     void CameraZoom() 
     {
         //check Camera field out
-        if (Physics.CheckSphere(main_camera.position, 0.2f, layer_mask))
+        if (Physics.CheckSphere(main_cam.transform.position, 0.2f, layer_mask))
             distance -= 1.0f;
         //Physics.CheckSphere(,)
         if (CameraCheckColRay(ref col_zoom_pos))
@@ -139,12 +138,24 @@ public class CameraController : MonoBehaviour
         }    
     }
 
-    void CameraRotation()
+    void TargetAroundRotation()
     {
-        //상하 카메라 회전 제한
-        yaw += mouse_x;
-        pitch += mouse_y;
+        if(!follow_target.B_Targeting)  //
+        {
+            yaw += mouse_x;
+            pitch += mouse_y;
 
+        }
+        else
+        {
+            Vector3 dir = follow_target.Attack_Target.position - follow_target.transform.position;
+
+            yaw = Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg;
+            pitch = -Mathf.Atan2(dir.y , new Vector2(dir.x, dir.z).magnitude) * Mathf.Rad2Deg;
+            pitch += 30.0f;
+        }
+
+        //limit pitch angle 
         pitch = Mathf.Clamp(pitch, -40, 80);
 
 
