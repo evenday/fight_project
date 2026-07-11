@@ -15,7 +15,7 @@ public class AnimEvent : MonoBehaviour
     public void StartAnimation()
     {
        
-
+        
         anim_event.StartAnimation();
     }
 

@@ -1,0 +1,157 @@
+타겟된 대상중심에 타겟팅 이미지 생기게 하기
+
+Canvas에 UIManager.cs추가
+UIManager에서 각각의 UI들 끄거나 키기(Setactive)
+
+LockOnUI.cs: 록온 대상 위치값(Camera.main.WorldToScreenPoint())으로 위치 셋팅 
+
+todo 
+모델의 중심을 구해서 록온 이미지를 각각의 모델의 중심에 생기게 하기 
+-> renderer.bounds를 통해 bounds.encapsulate로 bound를 다합쳐서 중심을 구하는 방식은 
+무기 나 외부 요인으로 모델 전체 크기가 커지면 중심 위치도 바뀔 수 있어서 
+모델에 centerpoint(빈 오브젝트)를 추가 시켜서 이 오브젝트의 위치를 중심으로 쓰기
+
+타갯팅 할때 B_Targeting이 true이거나 false일 때 대상을 구하는 방식을 바꾸는 형식이라 
+Attack_Target, LockOn_Target 으로 나누기 
+Targeting 로직 수정 하기
+
+각각의 캐릭터들은 ModelCenterPoint(빈오브젝트)를 가지고 있게 하고
+ITargetAble에 Transform ModleCenterPoint()를 추가해서 
+ITargetAble를 상속 받는 객체들은 ModelCenterPoint()를 통해 외부에 좌표값 전해주기(범용성)
+
+B_Targeting bool 값 대신 
+ITargetAble Loch_On_Target 추가 
+Mouse2 입력시 범위 안에 대상이 있으면 Lock_On_Target값을 GetLockOnTargetTrans()로 값설정 
+Lock_On_Target이 있으면 Attack_Target = Lock_On_Target으로
+null이면 GetAttackTargetTrans()로 Attack_Target 값 설정
+
+수정 
+B_Targeting 사용 단 B_Targeting 값으로 ~Target값들을 설정 하는게 아닌 lockon상태인지 확인만
+
+GetKeyDown(KeyCode.Mouse2)
+B_Targeting = !B_Targeting;
+으로 휠 입력시 록온 상태 no/off 할 수 있게 
+
+GetKey(KeyCode.Mouse2)
+로 Attack_Target = GetLockOnTarget()(-> B_Targeting이 false 이면 null 반환)
+
+GetKeyUp(Mouse2) 할 때 까지 화면 고정  
+
+
+enum MouseInputState
+{
+ Down, Hold, Up
+}
+추가 
+InputState == Up이면 타겟으로 화면 고정 그전 까지는 화면을 자유롭게 움직이는 거 가능
+
+=================================================================
+마우스 휠을 빨리 입력시 록온 해제
+장시간 입력시 대상 변경
+
+
+Time.DeltaTime 을 저장 하는 mouse_wheel_hold_time
+
+입력 시간이 0.25 이하이면 록온 풀기
+이상이면 록온 지속
+
+타겟팅 로직변경
+기존 
+Mouse2 누를 시 B_Targetting 값 변경 
+CameraController.cs에서 B_Targetting == true 일 경우, Attack_Target(= Lock_On_Target)으로 화면 고정
+신규 
+외부 cs에서 LockOn on/off를 Lock_On_Target 값이 있는 지의 여부로 확인
+B_Targetting -> B_LockOnTargetSetStart 변경 
+Mouse2 Down -> true 
+Mouse2 Up -> false
+
+
+CameraController.cs->CaemraRotate()에서 
+화면 고정 조건을 Lock_OnTarget != null && !B_LockOnTargetSetStart
+일 떄 고정
+
+GetKeyUp(Mouse2)에서 
+mouse_wheel_hold_time 이 일정 시간 이하이면 Lock_On_Target = null()
+
+todo 현재 록온 대상이 없는 상태에서 록온 할 때 mouse_wheel_hold_time 이 일정 시간 이상되어야 
+록온 됨 
+            if (Lock_On_Target != null && mouse_wheel_hold_time <= 1.0f) 
+            {
+                Lock_On_Target = null;
+            }
+수정
+
+-> Player.cs에 B_LockOn 추가 
+B_LockOn: UIManager.cs에서 lock_on_ui.gameobject.activeSelf() 값을 받음
+현재 록온 ui가 켜져있는 상태에서 mouse_wheel_hold_time이 일정 시간 아래일 때 GetKeyUp을
+했을 때 록온 상태 풀기 
+
+추가 수정 
+록온 셋팅 할 때 Detect_box 범위 안에 대상이 없으면 lock_On_Ui가 마지막 대상 지점에 남아 있음 
+-> Detect_box.targets.count값을 받는 값 dect_box_in_target_count(int) 추가 이 값을 
+UiManager.cs에 쓸 수 있게 public로 설정 후 
+lock_on_ui.gameobject.SetActive()조건에 dect_box_in_target_count >0 추가 
+
+===================================================================
+록온 셋팅 상태(GetKey(Mouse2))에서 록온 이미지 투명도 낮추기 
+LockOnUI.cs에서 public float alpha 추가 UIManager.cs에서 
+
+로직 수정
+        if (player.detect_box_in_target_count > 0 && !player.B_LockOnTargetSetting)
+        {
+            lock_on_ui.gameObject.SetActive(player.Lock_On_Target != null);
+
+        }
+
+
+        //Set Ui Pos
+        if (lock_on_ui.gameObject.activeSelf && player.Lock_On_Target != null)
+            lock_on_ui.Target_Trans = player.Lock_On_Target.ModelCenterPoint();
+        else
+            lock_on_ui.Target_Trans = null;
+
+        Use Quick Ui Off
+        player.B_LockOn = lock_on_ui.gameObject.activeSelf;
+
+수정 후
+        //UI Draw
+        if(player.Lock_On_Target != null)
+            lock_on_ui.gameObject.SetActive(true);
+        else
+            lock_on_ui.gameObject.SetActive(false);
+
+        //Set Ui Pos / image.alpha setting
+        if (lock_on_ui.gameObject.activeSelf)
+        {
+            if (player.B_LockOnTargetSetting)
+                lock_on_ui.alpha = 0.5f;
+            else
+                lock_on_ui.alpha = 1.0f;
+
+            lock_on_ui.Target_Trans = player.Lock_On_Target.ModelCenterPoint();
+        }
+        else
+            lock_on_ui.Target_Trans = null;
+
+
+B_LockOn =  lock_In_ui.gameObject.activeself()  가 아닌 
+Player.cs내부에서 현재 록온 이 되어 있는지를 체크하는 기능으로 수정
+
+            if (B_LockOn && mouse_wheel_hold_time <= 0.26f) 
+            {
+                Lock_On_Target = null;
+                B_LockOn = false;
+            }
+            else
+            {
+                B_LockOn = true;
+            }
+
+록온 되어 있지 않는 상태에서 록온을 키고, 록온이 켜져 있는 상태에서 mouse_wheel_hold_time이 
+일정 시간 이하이면 끄기 
+
+추가 수정 
+록온 끌 때(b_lock_on= false) 록온이미지가 바로 꺼지는게 아닌 alpha값이 0.5f 로 바뀌고 꺼져서
+록온 알파값 설정에 mouse_wheel_lock_on > 0.26f 추가
+
+

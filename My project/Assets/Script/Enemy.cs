@@ -39,6 +39,8 @@ public class Enemy : MonoBehaviour, ITakeDamage, IAnimationEvent, ITargetAble
     [SerializeField] float attack_range = 5.0f;
     Vector3 target_distance = Vector3.zero;                     //(target.position - transform.position).magnitude
 
+    public Transform Model_Center_Point;
+
     private void Awake()
     {
         rigid = GetComponent<Rigidbody>();
@@ -252,6 +254,11 @@ public class Enemy : MonoBehaviour, ITakeDamage, IAnimationEvent, ITargetAble
     public Transform Transform()
     {
         return transform;
+    }
+
+    public Transform ModelCenterPoint()
+    {
+        return Model_Center_Point;
     }
 
     public string ObjectName()

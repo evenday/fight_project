@@ -33,15 +33,18 @@ public class Player : MonoBehaviour, ITakeDamage, IAnimationEvent, ITargetAble
     float smooth_vel = 0.0f;
     float smooth_time = 0.1f;
 
-
-    //Battle Setting Values
+    [Header("Attack Setting Values")]
     HitBox hit_box;
     DetectBox detect_box;
     private float hp = 10.0f;
-    public Transform Attack_Target { get; private set; } = null;
+    public ITargetAble Lock_On_Target { get; private set; } = null;
+    ITargetAble Attack_Target = null;
+    [SerializeField] Transform Model_Center_Point;
     [SerializeField] float attack_damage = 1.0f;
-    public bool B_Targeting { get; private set; } = false;                               //targeting check
 
+    public bool B_Lock_On_Target_Setting { get; private set; } = false;
+    bool b_lock_on = false;
+    public float Mouse_Wheel_Hold_Time { get; private set; } = 0.0f;
 
     public float Hp
     {
@@ -53,18 +56,14 @@ public class Player : MonoBehaviour, ITakeDamage, IAnimationEvent, ITargetAble
     //aniamtion Running ckeck
     bool b_anim_running = false;
 
-
-
-
     private void Awake()
     {
         rigid = GetComponent<Rigidbody>();
         anim = GetComponentInChildren<Animator>();
         hit_box = GetComponentInChildren<HitBox>();
         detect_box = GetComponentInChildren<DetectBox>();
-
         main_cam = Camera.main;
-
+     
     }
 
     // Start is called before the first frame update
@@ -117,6 +116,7 @@ public class Player : MonoBehaviour, ITakeDamage, IAnimationEvent, ITargetAble
         StateAction();
 
         //Debug.Log("Targeting: " + B_Targeting);
+        //Debug.Log("Target: " + Attack_Target);
 
     }
 
@@ -166,7 +166,8 @@ public class Player : MonoBehaviour, ITakeDamage, IAnimationEvent, ITargetAble
             return  0.0f;
     }
 
-    Transform GetAttackTargetTrans()
+    //Target near the Player(3d)
+    ITargetAble GetAttackTarget()
     {
         if (detect_box.Targets.Count == 0)
             return null;
@@ -190,19 +191,17 @@ public class Player : MonoBehaviour, ITakeDamage, IAnimationEvent, ITargetAble
             }
 
         }
-        if (attack_target != null)
-            Debug.Log(attack_target.ObjectName());
 
 
-        return attack_target.Transform();
+        return attack_target;
 
     }
 
-    Transform GetLockOnTargetTrans()
+    //Target close to the center of the screen(2d)
+    ITargetAble GetLockOnTarget()
     {
         if (detect_box.Targets.Count == 0)
         {
-            B_Targeting = false;
             return null;
         }
 
@@ -231,9 +230,56 @@ public class Player : MonoBehaviour, ITakeDamage, IAnimationEvent, ITargetAble
 
             if (before_target_distance >= cur_target_distance)
                 target = it;
+
         }
 
-        return target.Transform();
+
+        return target;
+    }
+
+    //Detect_Box.Count > 0
+    //Close ITargetAbleObject TargetSet
+    //Mouse Wheel click -> Screen center close ITargetAbleObject Lock_On_Target Set(Lock_On_Target != null -> Attack_Target = Lock_On_Target)
+    //Detect_Box.Count  == 0
+    //Player Look Direct Attack
+    void AttackTargetSetting()
+    {
+
+        if(Input.GetKey(KeyCode.Mouse2))
+        {
+            B_Lock_On_Target_Setting = true;
+            Mouse_Wheel_Hold_Time += Time.deltaTime;
+
+
+            Lock_On_Target = GetLockOnTarget();
+        }
+        
+        if(Input.GetKeyUp(KeyCode.Mouse2))
+        {
+
+            if (b_lock_on && Mouse_Wheel_Hold_Time <= 0.26f) 
+            {
+                Lock_On_Target = null;
+                b_lock_on = false;
+            }
+            else
+            {
+                b_lock_on = true;
+            }
+
+            Mouse_Wheel_Hold_Time = 0.0f;
+            B_Lock_On_Target_Setting = false;
+        }
+
+        Debug.Log("Lock_On_Target: " + Lock_On_Target);
+
+
+        if (Lock_On_Target != null)
+            Attack_Target = Lock_On_Target;
+        else
+            Attack_Target = GetAttackTarget();
+
+
     }
 
     void StateManager()
@@ -241,14 +287,7 @@ public class Player : MonoBehaviour, ITakeDamage, IAnimationEvent, ITargetAble
         if (b_anim_running)
             return;
 
-        if (Input.GetKeyDown(KeyCode.Mouse2))
-            B_Targeting = !B_Targeting;
-
-
-        if (!B_Targeting)
-            Attack_Target = GetAttackTargetTrans();
-        else
-            Attack_Target = GetLockOnTargetTrans();
+        AttackTargetSetting();
 
         if (HasMovementInput())     //Move
         {
@@ -318,7 +357,7 @@ public class Player : MonoBehaviour, ITakeDamage, IAnimationEvent, ITargetAble
 
                 if (Attack_Target != null)
                 {
-                    transform.rotation = Quaternion.LookRotation(Attack_Target.position - transform.position);
+                    transform.rotation = Quaternion.LookRotation(Attack_Target.Transform().position - transform.position);
                 }
 
 
@@ -366,6 +405,11 @@ public class Player : MonoBehaviour, ITakeDamage, IAnimationEvent, ITargetAble
     public Transform Transform()
     {
         return transform;
+    }
+
+    public Transform ModelCenterPoint()
+    {
+        return Model_Center_Point;
     }
 
     public string ObjectName()

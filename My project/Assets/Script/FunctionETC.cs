@@ -10,6 +10,14 @@ enum State
     Attack
 };
 
+enum InputState
+{
+    Down,
+    Hold,
+    Up
+}
+
+
 public interface ITakeDamage
 {
     void TakeDamage(float damage);
@@ -27,8 +35,14 @@ public interface IAnimationEvent
 public interface ITargetAble
 {
     Transform Transform();
+
+    Transform ModelCenterPoint();
+    
     string ObjectName();            //Debug
+
 }
+
+
 
 
 
