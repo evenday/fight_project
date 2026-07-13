@@ -5,10 +5,11 @@ using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.UIElements;
 
-public class Player : MonoBehaviour, ITakeDamage, IAnimationEvent, ITargetAble
+public class Player : MonoBehaviour, ITakeDamageAble, IAnimationEvent, ITargetAble
 {
     Rigidbody rigid;
     Animator anim;
+    public CharacterStatus status;
 
     //Use
     //CameraController->main_camera.Transform
@@ -36,25 +37,21 @@ public class Player : MonoBehaviour, ITakeDamage, IAnimationEvent, ITargetAble
     [Header("Attack Setting Values")]
     HitBox hit_box;
     DetectBox detect_box;
-    private float hp = 10.0f;
     public ITargetAble Lock_On_Target { get; private set; } = null;
     ITargetAble Attack_Target = null;
-    [SerializeField] Transform Model_Center_Point;
+    [SerializeField] Transform Character_Center_Point;
     [SerializeField] float attack_damage = 1.0f;
 
     public bool B_Lock_On_Target_Setting { get; private set; } = false;
     bool b_lock_on = false;
     public float Mouse_Wheel_Hold_Time { get; private set; } = 0.0f;
 
-    public float Hp
-    {
-        get { return hp; }
-        set { hp = Mathf.Clamp(value, 0, 10.0f); }
-    }
-
-
     //aniamtion Running ckeck
     bool b_anim_running = false;
+
+    //event
+    public event System.Action<CharacterStatus> TakeDamageEvent;
+
 
     private void Awake()
     {
@@ -63,13 +60,11 @@ public class Player : MonoBehaviour, ITakeDamage, IAnimationEvent, ITargetAble
         hit_box = GetComponentInChildren<HitBox>();
         detect_box = GetComponentInChildren<DetectBox>();
         main_cam = Camera.main;
-     
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        hp = 10.0f;
         hit_box.Damage = attack_damage;
         hit_box.gameObject.SetActive(false);
     }
@@ -252,12 +247,13 @@ public class Player : MonoBehaviour, ITakeDamage, IAnimationEvent, ITargetAble
 
 
             Lock_On_Target = GetLockOnTarget();
+            Debug.Log("Mouse_Wheel_Hold_Time: " + Mouse_Wheel_Hold_Time);
         }
         
         if(Input.GetKeyUp(KeyCode.Mouse2))
         {
 
-            if (b_lock_on && Mouse_Wheel_Hold_Time <= 0.26f) 
+            if (b_lock_on && Mouse_Wheel_Hold_Time <= 0.2f) 
             {
                 Lock_On_Target = null;
                 b_lock_on = false;
@@ -373,8 +369,11 @@ public class Player : MonoBehaviour, ITakeDamage, IAnimationEvent, ITargetAble
     //================================================Damage Interface===========================================================
     public void TakeDamage(float damange)
     {
-        hp -= damange;
-        Debug.Log(hp);
+        status.cur_hp -= damange;
+
+        TakeDamageEvent?.Invoke(status);
+
+        //Debug.Log(hp);
     }
 
     //============================================Animation Event Funtion======================================================
@@ -407,9 +406,9 @@ public class Player : MonoBehaviour, ITakeDamage, IAnimationEvent, ITargetAble
         return transform;
     }
 
-    public Transform ModelCenterPoint()
+    public Vector3 CharacterCenterPoint()
     {
-        return Model_Center_Point;
+        return Character_Center_Point.position;
     }
 
     public string ObjectName()

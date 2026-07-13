@@ -10,7 +10,7 @@ public class HitBox : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        ITakeDamage target = other.GetComponent<ITakeDamage>();
+        ITakeDamageAble target = other.GetComponent<ITakeDamageAble>();
 
         if(target != null)
         {

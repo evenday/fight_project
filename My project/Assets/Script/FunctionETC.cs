@@ -10,6 +10,15 @@ enum State
     Attack
 };
 
+[System.Serializable]
+public struct CharacterStatus
+{
+    public float max_hp;
+    public float cur_hp;
+
+}
+
+
 enum InputState
 {
     Down,
@@ -18,9 +27,10 @@ enum InputState
 }
 
 
-public interface ITakeDamage
+public interface ITakeDamageAble
 {
     void TakeDamage(float damage);
+
 }
 
 public interface IAnimationEvent
@@ -36,7 +46,7 @@ public interface ITargetAble
 {
     Transform Transform();
 
-    Transform ModelCenterPoint();
+    Vector3 CharacterCenterPoint();
     
     string ObjectName();            //Debug
 

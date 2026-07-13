@@ -367,7 +367,9 @@
 "Assets/Script/FunctionETC.cs"
 "Assets/Script/HitBox.cs"
 "Assets/Script/Player.cs"
+"Assets/Script/UI/HPBarUI.cs"
 "Assets/Script/UI/LockOnUI.cs"
+"Assets/Script/UI/PrivateUIManager.cs"
 "Assets/Script/UI/UIManager.cs"
 -langversion:9.0
 /deterministic

@@ -3,14 +3,11 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class Enemy : MonoBehaviour, ITakeDamage, IAnimationEvent, ITargetAble
+public class Enemy : MonoBehaviour, ITakeDamageAble, IAnimationEvent, ITargetAble
 {
-
-
-
     Rigidbody rigid;
     Animator anim;
-
+    public CharacterStatus status;
     //Control action values
     [SerializeField] State cur_state; 
     [SerializeField] float pattern_duration_time_max = 5.0f;    //Random time Max
@@ -30,7 +27,7 @@ public class Enemy : MonoBehaviour, ITakeDamage, IAnimationEvent, ITargetAble
     HitBox hit_box;
     [SerializeField] float attack_cooldown = 2.0f;
     [SerializeField] float attack_damage = 1.0f;
-    float hp = 10.0f; 
+
     float attack_wait_time = 0.0f;                      //wait after attack
 
     //Research
@@ -39,7 +36,9 @@ public class Enemy : MonoBehaviour, ITakeDamage, IAnimationEvent, ITargetAble
     [SerializeField] float attack_range = 5.0f;
     Vector3 target_distance = Vector3.zero;                     //(target.position - transform.position).magnitude
 
-    public Transform Model_Center_Point;
+    public Transform Character_Center_Point;
+
+    public event System.Action<CharacterStatus> TakeDamageEvent;
 
     private void Awake()
     {
@@ -220,7 +219,8 @@ public class Enemy : MonoBehaviour, ITakeDamage, IAnimationEvent, ITargetAble
     //================================================Damage Interface===========================================================
     public void TakeDamage(float damage)
     {
-        hp -= damage;
+        status.cur_hp -= damage;
+        TakeDamageEvent?.Invoke(status);
         //Debug.Log(hp);
     }
 
@@ -256,13 +256,14 @@ public class Enemy : MonoBehaviour, ITakeDamage, IAnimationEvent, ITargetAble
         return transform;
     }
 
-    public Transform ModelCenterPoint()
+    public Vector3 CharacterCenterPoint()
     {
-        return Model_Center_Point;
+        return Character_Center_Point.position; 
     }
 
     public string ObjectName()
     {
+        
         return gameObject.name;
     }
 
